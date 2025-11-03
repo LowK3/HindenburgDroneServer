@@ -30,7 +30,7 @@ def listen_for_client(s):
         try:
             data, addr = s.recvfrom(1024)
             if data == b"PC_CLIENT":
-                print(f"Client connected: {addr}")
+                print(f"Client connected:aa {addr}")
                 return addr
         except Exception as e:
             print("Listen error:", e)
