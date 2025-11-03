@@ -11,6 +11,7 @@ SERVER_PORT = 8485
 CHUNK_SIZE = 60000
 FRAME_INTERVAL = 0.016
 CLIENT_TIMEOUT = 5.0
+CLIENT_CHECK_INTERVAL = 2.0
 
 shutdown_flag = False
 
@@ -57,33 +58,65 @@ def listen_for_client(s):
             time.sleep(0.5)
     return None
 
+def check_for_new_client(s, current_client):
+    """Check for new client connection requests while streaming"""
+    try:
+        data, addr = s.recvfrom(1024)
+        if data == b"PC_CLIENT" and addr != current_client:
+            print(f"New client requested connection: {addr}")
+            return addr
+    except socket.timeout:
+        pass
+    except Exception as e:
+        print(f"Error checking for new client: {e}")
+    return None
+
 def stream_frames(s, cam, client_addr):
     global shutdown_flag
     print("Starting video stream...")
     frame_id = 0
     last_sent = time.time()
+    last_client_check = time.time()
 
     while not shutdown_flag:
         try:
             check_keyboard()
             if shutdown_flag:
-                return
+                return False
                 
+            current_time = time.time()
+            if current_time - last_client_check > CLIENT_CHECK_INTERVAL:
+                new_client = check_for_new_client(s, client_addr)
+                if new_client:
+                    print(f"Switching to new client: {new_client}")
+                    return True
+                last_client_check = current_time
+            
             frame = cam.capture_array()
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            ret, jpeg = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+            ret, jpeg = cv2.imencode('.jpg', frame)
             if not ret:
                 continue
 
             data = jpeg.tobytes()
+            chunks_sent = 0
             for i in range(0, len(data), CHUNK_SIZE):
                 check_keyboard()
                 if shutdown_flag:
-                    return
+                    return False
                     
                 chunk = data[i:i + CHUNK_SIZE]
                 header = struct.pack("<III", frame_id, i // CHUNK_SIZE, len(data))
-                s.sendto(header + chunk, client_addr)
+                try:
+                    s.sendto(header + chunk, client_addr)
+                    chunks_sent += 1
+                except (OSError, ConnectionResetError):
+                    print("Client disconnected during frame transmission")
+                    return False
+
+            if chunks_sent == 0:
+                print("Failed to send any chunks, client may be disconnected")
+                return False
 
             frame_id += 1
             last_sent = time.time()
@@ -97,18 +130,20 @@ def stream_frames(s, cam, client_addr):
 
         except (OSError, ConnectionResetError) as e:
             print(f"Connection lost: {e}")
-            return
+            return False
 
         except Exception as e:
             print(f"Stream error: {e}")
             if time.time() - last_sent > CLIENT_TIMEOUT:
                 print("Client timeout, returning to listen mode.")
-                return
+                return False
 
             check_keyboard()
             if shutdown_flag:
-                return
+                return False
             time.sleep(0.5)
+    
+    return False
 
 def check_keyboard():
     global shutdown_flag
@@ -136,8 +171,11 @@ def main():
             if shutdown_flag:
                 break
             if client_addr:
-                stream_frames(s, cam, client_addr)
-                print("Restarting client discovery...")
+                should_reconnect = stream_frames(s, cam, client_addr)
+                if not should_reconnect:
+                    print("Client disconnected. Restarting client discovery...")
+                else:
+                    print("New client requested connection. Restarting discovery...")
     except KeyboardInterrupt:
         print("\nCtrl+C received, shutting down...")
         shutdown_flag = True
