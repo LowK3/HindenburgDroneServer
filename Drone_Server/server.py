@@ -14,7 +14,7 @@ def setup_camera():
     picam2 = Picamera2()
     config = picam2.create_video_configuration(
         main = {"size": (1440, 1080),},
-        control = {"FrameRate": 60})
+        controls = {"FrameRate": 60})
     picam2.configure(config)
     picam2.start()
     return picam2
