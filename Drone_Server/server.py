@@ -7,21 +7,19 @@ from picamera2 import Picamera2
 import sys
 import select
 
-SERVER_PORT = 8485         # TCP port for video stream
-DISC_PORT = 37020          # UDP discovery port
+TCP_PORT = 8485         # TCP port for video stream
+UDP_PORT = 37020          # UDP discovery port
 JPEG_QUALITY = 100
-FRAME_INTERVAL = 0.016     # ~30 FPS (adjust)
+FRAME_INTERVAL = 0.016     # 60 FPS 
 CLIENT_TIMEOUT = 5.0
-CHUNK_SIZE = 60000         # not used now (TCP handles fragmentation)
 
 shutdown_flag = False
 
 def setup_camera():
     cam = Picamera2()
-    # Use a 4:3 resolution to avoid zoom cropping if desired; you can adjust
     config = cam.create_video_configuration(
-        main={"size": (1440, 1080), "format": "RGB888"},
-        controls={"FrameRate": 30}
+        main={"size": (1440, 1080)},
+        controls={"FrameRate": 60}
     )
     cam.configure(config)
     cam.start()
@@ -30,16 +28,15 @@ def setup_camera():
 def setup_udp_socket():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    # bind to DISC_PORT to receive discovery messages
     s.setsockopt(socket.SOL_SOCKET, 25, b"eth0\0")  # force eth0 (Linux)
-    s.bind(("0.0.0.0", DISC_PORT))
+    s.bind(("0.0.0.0", UDP_PORT))
     s.settimeout(0.2)
     return s
 
 def setup_tcp_listener():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(("", SERVER_PORT))
+    server.bind(("", TCP_PORT))
     server.listen(1)
     server.settimeout(1.0)
     return server
@@ -57,7 +54,7 @@ def check_keyboard():
         pass
 
 def wait_for_client_udp(udp_sock):
-    """Wait for PC_CLIENT discovery broadcast and reply with PI_CAM:port"""
+    #Wait for PC_CLIENT discovery broadcast and reply with PI_SERVER:port
     print("Waiting for discovery (PC_CLIENT)...")
     start = time.time()
     while not shutdown_flag:
@@ -67,26 +64,26 @@ def wait_for_client_udp(udp_sock):
                 continue
             if data == b"PC_CLIENT":
                 print(f"Discovery request from {addr}, replying with TCP port.")
-                # reply directly to the client with TCP port info
-                reply = f"PI_CAM:{SERVER_PORT}".encode()
+                reply = f"PI_SERVER:{TCP_PORT}".encode()
                 try:
                     udp_sock.sendto(reply, addr)
                 except Exception as e:
-                    print("Failed to send discovery reply:", e)
-                return addr  # return addr if needed
+                    print(f"Failed to send discovery reply: {e}")
+                return addr
         except socket.timeout:
             check_keyboard()
             continue
         except Exception as e:
-            print("Discovery error:", e)
+            print(f"Discovery error: {e}")
             time.sleep(0.5)
     return None
 
 def stream_over_tcp(conn, cam):
-    """Stream length-prefixed JPEG frames over the connected TCP socket."""
-    print("Starting TCP stream to client:", conn.getpeername())
+    #Stream length-prefixed JPEG frames over the connected TCP socket.
+    print(f"Starting TCP stream to client: {conn.getpeername()}")
     frame_id = 0
     last_sent = time.time()
+
     try:
         while not shutdown_flag:
             check_keyboard()
@@ -101,7 +98,6 @@ def stream_over_tcp(conn, cam):
                 continue
 
             data = jpeg.tobytes()
-            # prefix length
             try:
                 conn.sendall(struct.pack("<I", len(data)) + data)
             except (BrokenPipeError, ConnectionResetError, OSError) as e:
@@ -111,7 +107,6 @@ def stream_over_tcp(conn, cam):
             frame_id += 1
             last_sent = time.time()
 
-            # Sleep to keep frame rate stable but allow early exit
             t0 = time.time()
             while time.time() - t0 < FRAME_INTERVAL:
                 check_keyboard()
@@ -119,11 +114,8 @@ def stream_over_tcp(conn, cam):
                     return False
                 time.sleep(0.005)
 
-            # optionally check for new discovery request to allow client switch
-            # we will check discovery socket in outer loop
-
     except Exception as e:
-        print("Streaming exception:", e)
+        print(f"Streaming exception: {e}")
         return False
 
     return False
@@ -140,14 +132,12 @@ def main():
         while not shutdown_flag:
             check_keyboard()
 
-            # Wait for discovery
             client_addr = wait_for_client_udp(udp_sock)
             if shutdown_flag:
                 break
             if not client_addr:
                 continue
 
-            # Now wait for TCP connection from that client (or any client)
             print("Waiting for TCP connection from client...")
             tcp_conn = None
             start_wait = time.time()
@@ -158,14 +148,11 @@ def main():
                     tcp_conn = conn
                     tcp_conn.settimeout(None)
                 except socket.timeout:
-                    # periodically allow checking discovery socket (so new clients can be discovered)
                     try:
-                        # see if a new discovery arrives asking to switch client
                         data, addr = udp_sock.recvfrom(1024)
                         if data == b"PC_CLIENT":
                             print("Another discovery while waiting for TCP connection:", addr)
-                            # reply to new discoverer too
-                            udp_sock.sendto(f"PI_CAM:{SERVER_PORT}".encode(), addr)
+                            udp_sock.sendto(f"PI_SERVER:{TCP_PORT}".encode(), addr)
                     except socket.timeout:
                         pass
                     except Exception:
@@ -176,7 +163,6 @@ def main():
                     time.sleep(0.2)
 
             if tcp_conn:
-                # stream until disconnected or error
                 ok = stream_over_tcp(tcp_conn, cam)
                 try:
                     tcp_conn.close()
@@ -195,18 +181,9 @@ def main():
         shutdown_flag = True
     finally:
         print("Server shutting down...")
-        try:
-            cam.stop()
-        except:
-            pass
-        try:
-            udp_sock.close()
-        except:
-            pass
-        try:
-            tcp_listener.close()
-        except:
-            pass
+        cam.stop()
+        udp_sock.close()
+        tcp_listener.close()
 
 if __name__ == "__main__":
     main()
