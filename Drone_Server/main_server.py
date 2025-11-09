@@ -2,10 +2,12 @@
 import threading
 import sys
 import select
+import time
 from Hardware.camera_manager import Camera
 from Network.discovery_server import DiscoveryServer
 from Network.tcp_video_server import TCPServer
 from Utils.common import log
+from config import MAX_TCP_WAIT
 
 class ServerApp:
     def __init__(self):
@@ -59,14 +61,20 @@ class ServerApp:
 
                 # 2) Wait for TCP connection
                 conn, tcp_addr = None, None
+                start_wait = time.time()
                 while not self.shutdown_flag() and conn is None:
                     self._check_keyboard()
                     conn, tcp_addr = tcp_server.accept_client(self.shutdown_flag)
 
+                    if conn is None and (time.time() - start_wait) > MAX_TCP_WAIT:
+                        log("TCP connection timeout after discovery, returning to discovery loop")
+                        break
+
                 if self.shutdown_flag():
                     break
+
                 if conn is None:
-                    log("No TCP connection established, back to discovery")
+                    log("No TCP client connected in time, back to discovery")
                     continue
 
                 # 3) Stream until client disconnects or error
