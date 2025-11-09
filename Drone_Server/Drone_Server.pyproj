@@ -21,6 +21,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="control_server.py" />
     <Compile Include="main_server.py" />
     <Compile Include="camera_stream.py" />
   </ItemGroup>
