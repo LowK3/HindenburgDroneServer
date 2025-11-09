@@ -8,7 +8,7 @@ import sys
 import select
 
 TCP_PORT = 8485         # TCP port for video stream
-UDP_PORT = 37020          # UDP discovery port
+UDP_PORT = 37020        # UDP discovery port
 JPEG_QUALITY = 100
 FRAME_INTERVAL = 0.016     # 60 FPS 
 CLIENT_TIMEOUT = 5.0
@@ -28,7 +28,18 @@ def setup_camera():
 def setup_udp_socket():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    s.setsockopt(socket.SOL_SOCKET, 25, b"eth0\0")  # force eth0 (Linux)
+    # Try to bind to eth0 on Linux; ignore if unavailable or not permitted
+    try:
+        if hasattr(socket, "SO_BINDTODEVICE"):
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"eth0\0")
+        else:
+            # fallback attempt using numeric value (may not exist on all platforms)
+            try:
+                s.setsockopt(socket.SOL_SOCKET, 25, b"eth0\0")
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"Could not bind UDP socket to device: {e}")
     s.bind(("0.0.0.0", UDP_PORT))
     s.settimeout(0.2)
     return s
@@ -184,6 +195,29 @@ def main():
         cam.stop()
         udp_sock.close()
         tcp_listener.close()
+
+# --- Small wrapper so main_server can import CameraServer.start/stop ----
+class CameraServer:
+    def __init__(self, host="0.0.0.0", port=8485, udp_port=37020):
+        self.host = host
+        self.port = port
+        self.udp_port = udp_port
+
+    def start(self):
+        global TCP_PORT, UDP_PORT, shutdown_flag
+        # allow caller to override ports
+        TCP_PORT = self.port
+        UDP_PORT = self.udp_port
+        shutdown_flag = False
+        try:
+            main()
+        except Exception as e:
+            print(f"[CameraServer] Exception in start: {e}")
+            shutdown_flag = True
+
+    def stop(self):
+        global shutdown_flag
+        shutdown_flag = True
 
 if __name__ == "__main__":
     main()
