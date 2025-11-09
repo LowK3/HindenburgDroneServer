@@ -3,13 +3,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>792b6e80-e3c9-4af3-bb7e-1266203c8c86</ProjectGuid>
-    <ProjectHome>.</ProjectHome>
+    <ProjectHome>
+    </ProjectHome>
     <StartupFile>camera_stream.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>Drone_Server</Name>
+    <Name>drone_server</Name>
     <RootNamespace>Drone_Server</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -21,9 +22,22 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="config.py" />
     <Compile Include="control_server.py" />
+    <Compile Include="hardware\camera_manager.py" />
+    <Compile Include="hardware\__init__.py" />
     <Compile Include="main_server.py" />
     <Compile Include="camera_stream.py" />
+    <Compile Include="network\discovery_server.py" />
+    <Compile Include="network\tcp_video_server.py" />
+    <Compile Include="network\__init__.py" />
+    <Compile Include="utils\__init__.py" />
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="network\" />
+    <Folder Include="hardware\" />
+    <Folder Include="utils\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
