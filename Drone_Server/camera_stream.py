@@ -198,7 +198,7 @@ def main():
 
 # --- Small wrapper so main_server can import CameraServer.start/stop ----
 class CameraServer:
-    def __init__(self, host="0.0.0.0", port=8485, udp_port=37020):
+    def __init__(self, host="0.0.0.0", port=TCP_PORT, udp_port=UDP_PORT):
         self.host = host
         self.port = port
         self.udp_port = udp_port
