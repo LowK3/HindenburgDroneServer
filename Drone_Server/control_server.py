@@ -1,4 +1,4 @@
-import socket
+ï»¿import socket
 import threading
 import json
 import pigpio
@@ -14,7 +14,7 @@ class Engine:
         self.name = name
         self.pwm_freq = 50
         self.range = 1000
-        self.neutral = 75   # 7.5% = 1500 µs pulse (stop)
+        self.neutral = 75   # 7.5% = 1500 Âµs pulse (stop)
         self.min_duty = 60  # ~5% = full reverse
         self.max_duty = 100 # ~10% = full forward
         self.current_duty = self.neutral
@@ -36,12 +36,12 @@ class Engine:
         self.set_duty(self.neutral)
 
     def forward(self, power=0.5):
-        """Move forward: 0–1 range ? duty between neutral and max."""
+        """Move forward: 0â€“1 range duty between neutral and max."""
         duty = self.neutral + (self.max_duty - self.neutral) * power
         self.set_duty(duty)
 
     def reverse(self, power=0.5):
-        """Move backward: 0–1 range ? duty between neutral and min."""
+        """Move backward: 0â€“1 range â†’ duty between neutral and min."""
         duty = self.neutral - (self.neutral - self.min_duty) * power
         self.set_duty(duty)
 
