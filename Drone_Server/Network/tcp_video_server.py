@@ -9,7 +9,7 @@ from Utils.common import log
 class TCPServer:
     """
     Accepts a single TCP client and streams length-prefixed JPEG frames.
-    On any connection error, it returns to caller so main loop can resume discovery.
+    On any error/disconnect, returns to caller so main loop can rediscover.
     """
 
     def __init__(self, camera):
@@ -22,17 +22,14 @@ class TCPServer:
         self.server_sock.bind(("", TCP_PORT))
         self.server_sock.listen(1)
         self.server_sock.settimeout(TCP_ACCEPT_TIMEOUT)
-        log(f"TCP server listening on port {TCP_PORT}")
+        log(f"TCP server listening on {TCP_PORT}")
 
     def accept_client(self, shutdown_flag):
-        """
-        Wait for a TCP client. Periodically returns None if no connection,
-        so caller can check shutdown_flag and/or discovery.
-        """
+        """Wait for TCP client; returns (conn, addr) or (None, None) on timeout/error."""
         try:
             conn, addr = self.server_sock.accept()
             conn.settimeout(TCP_SEND_TIMEOUT)
-            log(f"TCP client connected from {addr}")
+            log(f"TCP client connected: {addr}")
             return conn, addr
         except socket.timeout:
             return None, None
@@ -41,31 +38,35 @@ class TCPServer:
                 log(f"TCP accept error: {e}")
             return None, None
 
-    def stream_to_client(self, conn, addr, shutdown_flag):
+    def stream_to_client(self, conn, addr, shutdown_flag, poll_keyboard):
         """
-        Stream frames to a connected client.
-        Returns when client disconnects or on error.
+        Stream frames to client until:
+          - shutdown_flag() is True
+          - send fails
+        Then closes conn and returns.
         """
-        log(f"Starting TCP video stream to {addr}")
+        log(f"Starting TCP stream to {addr}")
         try:
             while not shutdown_flag():
+                poll_keyboard()  # <- critical: allows 'q' to work during streaming
+
                 frame = self.camera.capture_frame()
                 if frame is None:
-                    log("Skipping frame: camera returned None")
+                    log("Camera returned None, skipping frame")
                     time.sleep(FRAME_INTERVAL)
                     continue
 
                 ok, jpeg = cv2.imencode('.jpg', frame,
                                         [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY])
                 if not ok:
-                    log("Failed to encode frame to JPEG, skipping")
+                    log("JPEG encode failed, skipping frame")
                     time.sleep(FRAME_INTERVAL)
                     continue
 
                 data = jpeg.tobytes()
                 length = len(data)
                 if length == 0:
-                    log("Empty JPEG buffer, skipping")
+                    log("Empty JPEG buffer, skipping frame")
                     time.sleep(FRAME_INTERVAL)
                     continue
 
@@ -78,11 +79,11 @@ class TCPServer:
                     log(f"Unexpected send error to {addr}: {e}")
                     break
 
-                # pacing
                 t0 = time.time()
                 while time.time() - t0 < FRAME_INTERVAL:
                     if shutdown_flag():
                         break
+                    poll_keyboard()
                     time.sleep(0.003)
 
         finally:

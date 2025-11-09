@@ -18,15 +18,16 @@ class ServerApp:
         self._shutdown.set()
 
     def _check_keyboard(self):
+        """Called frequently (including during streaming) so 'q' works."""
         try:
             dr, _, _ = select.select([sys.stdin], [], [], 0)
             if dr:
                 key = sys.stdin.read(1)
                 if key.lower() == 'q':
-                    log("Shutdown key pressed (q), shutting down")
+                    log("Shutdown key 'q' pressed.")
                     self.request_shutdown()
         except Exception:
-            # Non-fatal: ignore stdin issues
+            # ignore stdin issues
             pass
 
     def run(self):
@@ -47,62 +48,44 @@ class ServerApp:
             while not self.shutdown_flag():
                 self._check_keyboard()
 
-                # Phase 1: Discovery
+                # 1) Discovery (non-blocking)
                 addr = discovery.listen_once()
                 if self.shutdown_flag():
                     break
                 if not addr:
-                    continue  # timeout, loop again
+                    continue
 
-                log(f"Discovered client via UDP: {addr}, waiting for TCP connect")
+                log(f"Discovered client via UDP: {addr}, waiting for TCP connection")
 
-                # Phase 2: Accept TCP client
+                # 2) Wait for TCP connection
                 conn, tcp_addr = None, None
                 while not self.shutdown_flag() and conn is None:
                     self._check_keyboard()
                     conn, tcp_addr = tcp_server.accept_client(self.shutdown_flag)
-                    if conn is None and not self.shutdown_flag():
-                        # No TCP yet still log occasionally
-                        continue
 
                 if self.shutdown_flag():
                     break
                 if conn is None:
-                    # Something went wrong; back to discovery
-                    log("Failed to establish TCP connection, returning to discovery")
+                    log("No TCP connection established, back to discovery")
                     continue
 
-                # Phase 3: Stream until client dies or error
-                tcp_server.stream_to_client(conn, tcp_addr, self.shutdown_flag)
+                # 3) Stream until client disconnects or error
+                tcp_server.stream_to_client(conn, tcp_addr, self.shutdown_flag, self._check_keyboard)
 
-                # At this point: stream ended (client disconnect, error, etc.)
-                log("Client disconnected or stream ended. Returning to discovery loop.")
+                log("Client disconnected / stream ended. Returning to discovery loop.")
 
         except KeyboardInterrupt:
             log("KeyboardInterrupt caught, shutting down")
             self.request_shutdown()
         except Exception as e:
-            log(f"Unexpected fatal error in main loop: {e}")
+            log(f"Unexpected error in main loop: {e}")
             self.request_shutdown()
         finally:
-            log("Server shutting down, cleaning up...")
-            try:
-                tcp_server.stop()
-            except Exception as e:
-                log(f"Error stopping TCP server: {e}")
-
-            try:
-                discovery.stop()
-            except Exception as e:
-                log(f"Error stopping discovery: {e}")
-
-            try:
-                cam.stop()
-            except Exception as e:
-                log(f"Error stopping camera: {e}")
-
-            log("Shutdown complete")
+            log("Server shutting down...")
+            tcp_server.stop()
+            discovery.stop()
+            cam.stop()
+            log("Server shutdown complete")
 
 if __name__ == "__main__":
-    app = ServerApp()
-    app.run()
+    ServerApp().run()
