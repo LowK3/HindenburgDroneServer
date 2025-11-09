@@ -10,7 +10,7 @@
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>drone_server</Name>
+    <Name>Drone_Server</Name>
     <RootNamespace>Drone_Server</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -29,6 +29,7 @@
     <Compile Include="Network\discovery_server.py" />
     <Compile Include="Network\tcp_video_server.py" />
     <Compile Include="Network\__init__.py" />
+    <Compile Include="Utils\common.py" />
     <Compile Include="Utils\__init__.py" />
   </ItemGroup>
   <ItemGroup>

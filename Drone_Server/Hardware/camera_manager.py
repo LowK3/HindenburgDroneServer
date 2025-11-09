@@ -2,10 +2,9 @@ import cv2
 from picamera2 import Picamera2
 
 class Camera:
-    def __init__(self, size=(1440,1080), fps=60):
+    def __init__(self, size=(1440,1080), fps=30):
         self.cam = Picamera2()
-        cfg = self.cam.create_video_configuration(main={"size": size},
-                                                  controls={"FrameRate": fps})
+        cfg = self.cam.create_video_configuration(main={"size": size}, controls={"FrameRate": fps})
         self.cam.configure(cfg)
         self.cam.start()
 
