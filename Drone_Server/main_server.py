@@ -1,7 +1,7 @@
 import time
-from network.discovery_server import DiscoveryServer
-from network.tcp_video_server import TCPServer
-from hardware.camera_manager import Camera
+from Network.discovery_server import DiscoveryServer
+from Network.tcp_video_server import TCPServer
+from Hardware.camera_manager import Camera
 
 def main():
     cam = Camera()

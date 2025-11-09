@@ -1,6 +1,5 @@
-import socket, struct, cv2
+import socket, struct, cv2, time
 from config import TCP_PORT, JPEG_QUALITY, FRAME_INTERVAL
-import time
 
 class TCPServer:
     def __init__(self, camera):
