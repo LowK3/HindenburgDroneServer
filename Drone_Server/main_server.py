@@ -31,7 +31,7 @@ class ServerApp:
 
         try:
             while not self.shutdown_flag():
-                check_keyboard()
+                check_keyboard(self._shutdown)
 
                 # 1) Discovery (non-blocking)
                 addr = discovery.listen_once()
@@ -46,7 +46,7 @@ class ServerApp:
                 conn, tcp_addr = None, None
                 start_wait = time.time()
                 while not self.shutdown_flag() and conn is None:
-                    check_keyboard()
+                    check_keyboard(self._shutdown)
                     conn, tcp_addr = tcp_server.accept_client(self.shutdown_flag)
 
                     if conn is None and (time.time() - start_wait) > MAX_TCP_WAIT:
@@ -61,7 +61,7 @@ class ServerApp:
                     continue
 
                 # 3) Stream until client disconnects or error
-                tcp_server.stream_to_client(conn, tcp_addr, self.shutdown_flag, check_keyboard)
+                tcp_server.stream_to_client(conn, tcp_addr, self.shutdown_flag, check_keyboard(self._shutdown))
 
                 log("Client disconnected / stream ended. Returning to discovery loop.")
 

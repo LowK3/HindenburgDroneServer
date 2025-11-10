@@ -6,15 +6,18 @@ def log(msg: str):
     print(f"{LOG_PREFIX} {ts} | {msg}")
     sys.stdout.flush()
 
-def check_keyboard(self):
-        """Called frequently (including during streaming) so 'q' works."""
-        try:
-            dr, _, _ = select.select([sys.stdin], [], [], 0)
-            if dr:
-                key = sys.stdin.read(1)
-                if key.lower() == "q":
-                    log("Shutdown key 'q' pressed.")
-                    self.request_shutdown()
-        except Exception:
-            # ignore stdin issues
-            pass
+def check_keyboard(shutdown_event):
+    """
+    Non-blocking check for 'q' key in stdin.
+    Sets the given shutdown_event if pressed.
+    """
+    try:
+        dr, _, _ = select.select([sys.stdin], [], [], 0)
+        if dr:
+            key = sys.stdin.read(1)
+            if key.lower() == 'q':
+                log("Shutdown key 'q' pressed")
+                shutdown_event.set()
+    except Exception:
+        # ignore any stdin/select failures silently
+        pass
