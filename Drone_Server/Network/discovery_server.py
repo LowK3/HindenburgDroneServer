@@ -1,13 +1,9 @@
-# network/discovery.py
 import socket
 from config import UDP_PORT, TCP_PORT, UDP_TIMEOUT
 from Utils.common import log
 
 class DiscoveryServer:
-    """
-    Listens for 'PC_CLIENT' on UDP and replies 'PI_SERVER:<TCP_PORT>'.
-    """
-
+    """Listens for "PC_CLIENT" on UDP and replies "PI_SERVER:<TCP_PORT>"."""
     def __init__(self):
         self.sock = None
 

@@ -1,4 +1,3 @@
-# camera/camera_streamer.py
 import cv2
 from picamera2 import Picamera2
 from config import CAM_RESOLUTION, CAM_FPS
@@ -13,8 +12,7 @@ class Camera:
             self.cam = Picamera2()
             cfg = self.cam.create_video_configuration(
                 main={"size": CAM_RESOLUTION},
-                controls={"FrameRate": CAM_FPS}
-            )
+                controls={"FrameRate": CAM_FPS})
             self.cam.configure(cfg)
             self.cam.start()
             log(f"Camera started with res={CAM_RESOLUTION}, fps={CAM_FPS}")

@@ -1,9 +1,5 @@
-# network/tcp_server.py
-import socket
-import struct
-import time
-import cv2
-from config import TCP_PORT, FRAME_INTERVAL, JPEG_QUALITY, TCP_ACCEPT_TIMEOUT, TCP_SEND_TIMEOUT
+import socket, struct, time, cv2
+from config import TCP_PORT, FRAME_INTERVAL, JPEG_QUALITY, TCP_ACCEPT_TIMEOUT, TCP_SEND_TIMEOUT, FORMAT
 from Utils.common import log
 
 class TCPServer:
@@ -11,7 +7,6 @@ class TCPServer:
     Accepts a single TCP client and streams length-prefixed JPEG frames.
     On any error/disconnect, returns to caller so main loop can rediscover.
     """
-
     def __init__(self, camera):
         self.camera = camera
         self.server_sock = None
@@ -48,7 +43,7 @@ class TCPServer:
         log(f"Starting TCP stream to {addr}")
         try:
             while not shutdown_flag():
-                poll_keyboard()  # <- critical: allows 'q' to work during streaming
+                poll_keyboard()  # Allows "q" to work during streaming
 
                 frame = self.camera.capture_frame()
                 if frame is None:
@@ -56,7 +51,7 @@ class TCPServer:
                     time.sleep(FRAME_INTERVAL)
                     continue
 
-                ok, jpeg = cv2.imencode('.jpg', frame,
+                ok, jpeg = cv2.imencode(FORMAT, frame,
                                         [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY])
                 if not ok:
                     log("JPEG encode failed, skipping frame")
