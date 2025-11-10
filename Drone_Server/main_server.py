@@ -61,7 +61,7 @@ class ServerApp:
                     continue
 
                 # 3) Stream until client disconnects or error
-                tcp_server.stream_to_client(conn, tcp_addr, self.shutdown_flag, check_keyboard(self._shutdown))
+                tcp_server.stream_to_client(conn, tcp_addr, self.shutdown_flag, lambda: check_keyboard(self._shutdown))
 
                 log("Client disconnected / stream ended. Returning to discovery loop.")
 
