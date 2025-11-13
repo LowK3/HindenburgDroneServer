@@ -24,18 +24,27 @@
   <ItemGroup>
     <Compile Include="config.py" />
     <Compile Include="Hardware\camera_manager.py" />
+    <Compile Include="Hardware\Engines\engines.py" />
+    <Compile Include="Hardware\Engines\front_engines.py" />
+    <Compile Include="Hardware\Engines\rear_engines.py" />
+    <Compile Include="Hardware\Engines\__init__.py" />
     <Compile Include="Hardware\__init__.py" />
     <Compile Include="main_server.py" />
     <Compile Include="Network\discovery_server.py" />
+    <Compile Include="Network\tcp_control_server.py" />
     <Compile Include="Network\tcp_video_server.py" />
     <Compile Include="Network\__init__.py" />
     <Compile Include="Utils\common.py" />
     <Compile Include="Utils\__init__.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Hardware\Engines\" />
     <Folder Include="Network\" />
     <Folder Include="Hardware\" />
     <Folder Include="Utils\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Hardware\Engines\engine_manager.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

@@ -1,9 +1,11 @@
 import threading, sys, time
+from config import MAX_TCP_WAIT
 from Hardware.camera_manager import Camera
 from Network.discovery_server import DiscoveryServer
 from Network.tcp_video_server import TCPServer
+from Network.tcp_control_server import ControlServer
+from Hardware.Engines.engine_manager import EngineManager
 from Utils.common import log, check_keyboard
-from config import MAX_TCP_WAIT
 
 class ServerApp:
     def __init__(self):
@@ -26,8 +28,18 @@ class ServerApp:
 
         tcp_server = TCPServer(cam)
         tcp_server.start()
-
         log("Server ready. Press 'q' then Enter to stop.")
+
+        engine_mgr = EngineManager()
+        control_server = ControlServer(engine_mgr)
+        control_server.start()
+
+        control_thread = threading.Thread(
+            target=control_server.accept_loop,
+            args=(self.shutdown_flag,),
+            daemon=True
+        )
+        control_thread.start()
 
         try:
             while not self.shutdown_flag():
@@ -77,6 +89,9 @@ class ServerApp:
             discovery.stop()
             cam.stop()
             log("Server shutdown complete")
+            control_server.stop()
+            engine_mgr.stop()
+            log("Engine shutdown complete")
 
 if __name__ == "__main__":
     ServerApp().run()
