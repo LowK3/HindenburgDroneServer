@@ -75,8 +75,6 @@ class ServerApp:
                 # 3) Stream until client disconnects or error
                 video_server.stream_to_client(conn, tcp_addr, self.shutdown_flag, lambda: check_keyboard(self._shutdown))
 
-                log("Client disconnected / stream ended. Returning to discovery loop.")
-
         except KeyboardInterrupt:
             log("KeyboardInterrupt caught, shutting down")
             self.request_shutdown()
@@ -84,13 +82,13 @@ class ServerApp:
             log(f"Unexpected error in main loop: {e}")
             self.request_shutdown()
         finally:
+            log("Pi Server shutting down...")
             control_server.stop()
             engine_mgr.stop()
             log("Engine shutdown complete")
-            log("Server shutting down...")
+            cam.stop()
             video_server.stop()
             discovery.stop()
-            cam.stop()
             log("Server shutdown complete")
 
 if __name__ == "__main__":

@@ -53,7 +53,7 @@ class TCPServer:
                     continue
 
                 ok, jpeg = cv2.imencode(FORMAT, frame,
-                                        [int(cv2.IMWRITE_JPEG_QUALITY)])
+                                        [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY])
                 if not ok:
                     log("JPEG encode failed, skipping frame")
                     time.sleep(FRAME_INTERVAL)
@@ -87,13 +87,13 @@ class TCPServer:
                 conn.close()
             except Exception as e:
                 log(f"Error closing client socket {addr}: {e}")
-            log(f"Stream to {addr} ended, returning to discovery")
+            log(f"Stream to {addr} ended. Returning to discovery loop.")
 
     def stop(self):
         if self.server_sock:
             try:
                 self.server_sock.close()
-                log("TCP server socket closed")
+                log("Video TCP socket closed")
             except Exception as e:
-                log(f"TCP server close error: {e}")
+                log(f"Video socket close error: {e}")
             self.server_sock = None
