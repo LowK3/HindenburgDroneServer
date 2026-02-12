@@ -53,7 +53,7 @@ class TCPServer:
                     continue
 
                 ok, jpeg = cv2.imencode(FORMAT, frame,
-                                        [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY])
+                                        [int(cv2.IMWRITE_JPEG_QUALITY)])
                 if not ok:
                     log("JPEG encode failed, skipping frame")
                     time.sleep(FRAME_INTERVAL)

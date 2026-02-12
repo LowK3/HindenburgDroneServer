@@ -7,6 +7,7 @@ CONTROL_TCP_PORT = 8600
 
 """ Camera settings """
 CAM_RESOLUTION = (1640, 1232)
+CAM_FULL_RES = (3280, 2464)
 CAM_FPS = 30
 JPEG_QUALITY = 90
 FORMAT = ".jpeg"

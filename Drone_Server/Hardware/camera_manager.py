@@ -1,6 +1,6 @@
 import cv2
 from picamera2 import Picamera2
-from config import CAM_RESOLUTION, CAM_FPS
+from config import CAM_RESOLUTION, CAM_FPS, CAM_FULL_RES
 from Utils.common import log
 
 class Camera:
@@ -12,7 +12,7 @@ class Camera:
             self.cam = Picamera2()
             cfg = self.cam.create_video_configuration(
                 main={"size": CAM_RESOLUTION},
-                #raw={"size": (3280, 2464)},
+                raw={"size": CAM_FULL_RES},
                 controls={"FrameRate": CAM_FPS})
             self.cam.configure(cfg)
             self.cam.start()
