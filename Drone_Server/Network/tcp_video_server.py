@@ -39,7 +39,7 @@ class TCPServer:
         Stream frames to client until:
           - shutdown_flag() is True
           - send fails
-        Then closes conn and returns.
+        Then closes connection and returns.
         """
         log(f"Starting TCP stream to {addr}")
         try:

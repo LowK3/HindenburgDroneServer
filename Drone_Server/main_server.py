@@ -26,8 +26,8 @@ class ServerApp:
         discovery = DiscoveryServer()
         discovery.start()
 
-        tcp_server = TCPServer(cam)
-        tcp_server.start()
+        video_server = TCPServer(cam)
+        video_server.start()
         log("Server ready. Press 'q' then Enter to stop.")
 
         engine_mgr = EngineManager()
@@ -59,7 +59,7 @@ class ServerApp:
                 start_wait = time.time()
                 while not self.shutdown_flag() and conn is None:
                     check_keyboard(self._shutdown)
-                    conn, tcp_addr = tcp_server.accept_client(self.shutdown_flag)
+                    conn, tcp_addr = video_server.accept_client(self.shutdown_flag)
 
                     if conn is None and (time.time() - start_wait) > MAX_TCP_WAIT:
                         log("TCP connection timeout after discovery, returning to discovery loop")
@@ -73,7 +73,7 @@ class ServerApp:
                     continue
 
                 # 3) Stream until client disconnects or error
-                tcp_server.stream_to_client(conn, tcp_addr, self.shutdown_flag, lambda: check_keyboard(self._shutdown))
+                video_server.stream_to_client(conn, tcp_addr, self.shutdown_flag, lambda: check_keyboard(self._shutdown))
 
                 log("Client disconnected / stream ended. Returning to discovery loop.")
 
@@ -84,14 +84,14 @@ class ServerApp:
             log(f"Unexpected error in main loop: {e}")
             self.request_shutdown()
         finally:
-            log("Server shutting down...")
-            tcp_server.stop()
-            discovery.stop()
-            cam.stop()
-            log("Server shutdown complete")
             control_server.stop()
             engine_mgr.stop()
             log("Engine shutdown complete")
+            log("Server shutting down...")
+            video_server.stop()
+            discovery.stop()
+            cam.stop()
+            log("Server shutdown complete")
 
 if __name__ == "__main__":
     ServerApp().run()
