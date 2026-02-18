@@ -12,7 +12,7 @@ CAM_FPS = 30
 JPEG_QUALITY = 90
 FORMAT = ".jpeg"
 
-FRAME_INTERVAL = 1.0 / CAM_FPS
+FRAME_INTERVALä = 1.0 / CAM_FPS
 
 """ Connection timeouts """
 UDP_TIMEOUT = 0.25
