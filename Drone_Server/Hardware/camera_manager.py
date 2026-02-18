@@ -27,7 +27,7 @@ class Camera:
             return None
         try:
             frame = self.cam.capture_array()
-            return cv2.cvtColor(frame)
+            return frame
         except Exception as e:
             log(f"Camera capture error: {e}")
             return None
