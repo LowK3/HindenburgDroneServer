@@ -1,5 +1,5 @@
 import socket, struct, time
-from config import CONTROL_TCP_PORT
+from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT
 from Utils.common import log
 
 class ControlServer:
@@ -15,12 +15,12 @@ class ControlServer:
         self.sock.listen(1)
         log(f"Control server listening on TCP {CONTROL_TCP_PORT}")
 
-    def accept_loop(self, shutdown_flag):
+    def accept_client(self, shutdown_flag):
         """ Blocking accept loop for incoming command connections. """
         while not shutdown_flag():
             try:
                 conn, addr = self.sock.accept()
-                conn.settimeout(2.0)
+                conn.settimeout(TCP_SEND_TIMEOUT)
                 log(f"Control client connected: {addr}")
                 self.handle_client(conn, addr, shutdown_flag)
             except socket.timeout:

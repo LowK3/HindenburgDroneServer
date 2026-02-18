@@ -17,7 +17,7 @@ FRAME_INTERVAL = 1.0 / CAM_FPS
 """ Connection timeouts """
 UDP_TIMEOUT = 0.25
 TCP_ACCEPT_TIMEOUT = 2.0
-TCP_SEND_TIMEOUT = 15.0
+TCP_SEND_TIMEOUT = 8.0
 MAX_TCP_WAIT = 10.0
 
 """ Logging """

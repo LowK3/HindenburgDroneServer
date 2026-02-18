@@ -2,7 +2,7 @@ import socket, struct, time, cv2
 from config import TCP_PORT, FRAME_INTERVAL, JPEG_QUALITY, TCP_ACCEPT_TIMEOUT, TCP_SEND_TIMEOUT, FORMAT
 from Utils.common import log
 
-class TCPServer:
+class VideoServer:
     """
     Accepts a single TCP client and streams length-prefixed JPEG frames.
     On any error/disconnect, returns to caller so main loop can rediscover.

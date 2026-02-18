@@ -2,7 +2,7 @@ import threading, sys, time
 from config import MAX_TCP_WAIT
 from Hardware.camera_manager import Camera
 from Network.discovery_server import DiscoveryServer
-from Network.tcp_video_server import TCPServer
+from Network.tcp_video_server import VideoServer
 from Network.tcp_control_server import ControlServer
 from Hardware.Engines.engine_manager import EngineManager
 from Utils.common import log, check_keyboard
@@ -26,7 +26,7 @@ class ServerApp:
         discovery = DiscoveryServer()
         discovery.start()
 
-        video_server = TCPServer(cam)
+        video_server = VideoServer(cam)
         video_server.start()
         log("Server ready. Press 'q' then Enter to stop.")
 
@@ -35,7 +35,7 @@ class ServerApp:
         control_server.start()
 
         control_thread = threading.Thread(
-            target=control_server.accept_loop,
+            target=control_server.accept_client,
             args=(self.shutdown_flag,),
             daemon=True
         )
