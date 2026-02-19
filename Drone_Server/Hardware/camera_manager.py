@@ -1,6 +1,6 @@
 import cv2
 from picamera2 import Picamera2
-from config import CAM_RESOLUTION, CAM_FPS, CAM_FULL_RES
+from config import CAM_RESOLUTION, CAM_FPS
 from Utils.common import log
 
 class Camera:
