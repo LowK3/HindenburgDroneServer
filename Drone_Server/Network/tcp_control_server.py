@@ -27,13 +27,20 @@ class ControlServer:
                 continue
 
     def handle_client(self, conn, addr, shutdown_flag):
+        buffer = ""
         try:
             while not shutdown_flag():
-                data = conn.recv(32)
+                data = conn.recv(1024)
                 if not data:
                     break
-                cmd = data.decode().strip()
-                self.engine.execute(cmd)
+                buffer += data.decode()
+                
+                # Extract and execute all complete commands in the buffer
+                while "\n" in buffer:
+                    cmd, buffer = buffer.split("\n", 1)
+                    cmd = cmd.strip()
+                    if cmd:
+                        self.engine.execute(cmd)
         except Exception as e:
             log(f"Control socket error: {e}")
         finally:

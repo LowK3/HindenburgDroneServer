@@ -2,7 +2,7 @@ import threading, sys, time
 from config import MAX_TCP_WAIT
 from Hardware.camera_manager import Camera
 from Network.discovery_server import DiscoveryServer
-from Network.tcp_video_server import VideoServer
+from Network.udp_video_server import VideoServer
 from Network.tcp_control_server import ControlServer
 from Hardware.Engines.engine_manager import EngineManager
 from Utils.common import log, check_keyboard
@@ -52,28 +52,14 @@ class ServerApp:
                 if not addr:
                     continue
 
-                log(f"Discovered client via UDP: {addr}, waiting for TCP connection")
+                client_ip = addr[0]
+                log(f"Discovered client at {client_ip}. Starting UDP Video stream!")
 
-                # 2) Wait for TCP connection
-                conn, tcp_addr = None, None
-                start_wait = time.time()
-                while not self.shutdown_flag() and conn is None:
-                    check_keyboard(self._shutdown)
-                    conn, tcp_addr = video_server.accept_client(self.shutdown_flag)
+                # 2) Stream via UDP. (The Control Server handles its own TCP connections in the background thread!)
+                video_server.stream_to_client(client_ip, self.shutdown_flag, lambda: check_keyboard(self._shutdown))
 
-                    if conn is None and (time.time() - start_wait) > MAX_TCP_WAIT:
-                        log("TCP connection timeout after discovery, returning to discovery loop")
-                        break
-
-                if self.shutdown_flag():
-                    break
-
-                if conn is None:
-                    log("No TCP client connected in time, back to discovery")
-                    continue
-
-                # 3) Stream until client disconnects or error
-                video_server.stream_to_client(conn, tcp_addr, self.shutdown_flag, lambda: check_keyboard(self._shutdown))
+                log("Stream ended. Returning to discovery...")
+                time.sleep(1.0)
 
         except KeyboardInterrupt:
             log("KeyboardInterrupt caught, shutting down")

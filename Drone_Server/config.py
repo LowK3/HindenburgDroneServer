@@ -1,6 +1,7 @@
 """ Video network ports """
 TCP_PORT = 8485
 UDP_PORT = 37020
+UDP_VIDEO_PORT = 8486
 
 """ Engine control port """
 CONTROL_TCP_PORT = 8600

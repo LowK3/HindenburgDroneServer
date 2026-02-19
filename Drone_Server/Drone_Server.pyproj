@@ -32,7 +32,7 @@
     <Compile Include="main_server.py" />
     <Compile Include="Network\discovery_server.py" />
     <Compile Include="Network\tcp_control_server.py" />
-    <Compile Include="Network\tcp_video_server.py" />
+    <Compile Include="Network\udp_video_server.py" />
     <Compile Include="Network\__init__.py" />
     <Compile Include="Utils\common.py" />
     <Compile Include="Utils\__init__.py" />
