@@ -11,7 +11,7 @@ class Camera:
         try:
             self.cam = Picamera2()
             cfg = self.cam.create_video_configuration(
-                main={"size": CAM_RESOLUTION},
+                main={"size": CAM_RESOLUTION, "format": "RGB888"},
                 controls={"FrameRate": CAM_FPS})
             self.cam.configure(cfg)
             self.cam.start()
