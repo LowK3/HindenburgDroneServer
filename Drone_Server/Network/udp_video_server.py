@@ -1,4 +1,4 @@
-import socket, struct, math, time, cv2
+import socket, struct, math, time, cv2, simplejpeg
 from config import UDP_VIDEO_PORT, FRAME_INTERVAL, JPEG_QUALITY, FORMAT
 from Utils.common import log
 
@@ -7,7 +7,7 @@ class VideoServer:
         self.camera = camera
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.frame_id = 0
-        self.max_chunk_size = 60000 # Safely under the 65k limit
+        self.max_chunk_size = 1500 # Lan byte limit
 
     def start(self):
         log("UDP Video server initialized.")
@@ -17,15 +17,17 @@ class VideoServer:
         try:
             while not shutdown_flag():
                 poll_keyboard()
+
                 frame = self.camera.capture_frame()
                 if frame is None:
                     continue
 
-                ok, jpeg = cv2.imencode(FORMAT, frame, [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY])
-                if not ok:
+                try:
+                    data = simplejpeg.encode_jpeg(frame, quality=JPEG_QUALITY, colorspace='RGB')
+                except Exception as e:
+                    log(f"Encode failed: {e}")
                     continue
 
-                data = jpeg.tobytes()
                 length = len(data)
                 num_chunks = math.ceil(length / self.max_chunk_size)
 
