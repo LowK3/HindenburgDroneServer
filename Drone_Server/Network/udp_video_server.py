@@ -23,7 +23,7 @@ class VideoServer:
                     continue
 
                 try:
-                    data = simplejpeg.encode_jpeg(frame, quality=JPEG_QUALITY, colorspace='BGR')
+                    data = simplejpeg.encode_jpeg(frame, quality=JPEG_QUALITY, colorspace='RGB')
                 except Exception as e:
                     log(f"Encode failed: {e}")
                     continue
