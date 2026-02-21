@@ -56,7 +56,7 @@ class ServerApp:
                 log(f"Discovered client at {client_ip}. Starting UDP Video stream!")
 
                 # 2) Stream via UDP. (The Control Server handles its own TCP connections in the background thread!)
-                video_server.stream_to_client(client_ip, self.shutdown_flag, lambda: check_keyboard(self._shutdown))
+                video_server.stream_to_client(client_ip, self.shutdown_flag, lambda: check_keyboard(self._shutdown), control_server)
 
                 log("Stream ended. Returning to discovery...")
                 time.sleep(1.0)

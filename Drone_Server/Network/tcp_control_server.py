@@ -7,6 +7,7 @@ class ControlServer:
     def __init__(self, engine_manager):
         self.engine = engine_manager
         self.sock = None
+        self.is_connected = False
 
     def start(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,6 +29,7 @@ class ControlServer:
 
     def handle_client(self, conn, addr, shutdown_flag):
         buffer = ""
+        self.is_connected = True
         try:
             while not shutdown_flag():
                 data = conn.recv(1024)
@@ -44,7 +46,9 @@ class ControlServer:
         except Exception as e:
             log(f"Control socket error: {e}")
         finally:
+            self.is_connected = False
             conn.close()
+            self.engine.stop()
             log(f"Control client disconnected: {addr}")
 
     def stop(self):

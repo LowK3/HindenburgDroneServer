@@ -1,6 +1,7 @@
 import socket, struct, math, time, cv2, simplejpeg
 from config import UDP_VIDEO_PORT, FRAME_INTERVAL, JPEG_QUALITY, FORMAT
 from Utils.common import log
+from Network.tcp_control_server import ControlServer
 
 class VideoServer:
     def __init__(self, camera):
@@ -12,11 +13,20 @@ class VideoServer:
     def start(self):
         log("UDP Video server initialized.")
 
-    def stream_to_client(self, client_ip, shutdown_flag, poll_keyboard):
+    def stream_to_client(self, client_ip, shutdown_flag, poll_keyboard, control_server):
         log(f"Starting UDP stream to {client_ip}:{UDP_VIDEO_PORT}")
+
+        connection_timeout = time.time() + 5.0
+
         try:
             while not shutdown_flag():
                 poll_keyboard()
+
+                if control_server.is_connected:
+                    connection_timeout = time.time() + 3.0
+                elif time.time() > connection_timeout:
+                    log("Client TCP control lost. Stopping UDP video stream.")
+                    break
 
                 frame = self.camera.capture_frame()
                 if frame is None:
