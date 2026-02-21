@@ -1,7 +1,6 @@
 import socket, struct, math, time, cv2, simplejpeg
 from config import UDP_VIDEO_PORT, FRAME_INTERVAL, JPEG_QUALITY, FORMAT
 from Utils.common import log
-from Network.tcp_control_server import ControlServer
 
 class VideoServer:
     def __init__(self, camera):

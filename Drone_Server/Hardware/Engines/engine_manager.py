@@ -39,8 +39,9 @@ class EngineManager:
         else:
             log(f"Unknown command: {cmd}")
             return
-
-        log(f"Executed engine command: {cmd}")
+        
+        if cmd != "STOP":
+            log(f"Executed engine command: {cmd}")
 
     def stop(self):
         log("Stopping all engines")

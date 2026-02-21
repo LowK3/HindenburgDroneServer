@@ -34,6 +34,6 @@ PWM_FREQUENCY = 50
 PWM_RANGE = 1000
 
 """ Duty cycle settings """
-NEUTRAL = 75         # 7.5%
-MAX_FORWARD = 100    # 10%
-MAX_REVERSE = 60     # 6%
+NEUTRAL = 75
+MAX_FORWARD = 100
+MAX_REVERSE = 60
