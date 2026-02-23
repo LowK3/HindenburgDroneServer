@@ -28,7 +28,7 @@ class ServerApp:
                 camera_running = True
                 break
             except Exception as e:
-                log(f"Camera init failed (Attempt {attempt+1}/6). Retrying in 5s...")
+                log(f"Camera init failed (Attempt {attempt+1}/8). Retrying in 5s...")
                 time.sleep(5)
                 
         if not camera_running:
@@ -83,8 +83,8 @@ class ServerApp:
             control_server.stop()
             engine_mgr.stop()
             log("Engine shutdown complete")
-            cam.stop()
             video_server.stop()
+            cam.stop()
             discovery.stop()
             log("Server shutdown complete")
 
