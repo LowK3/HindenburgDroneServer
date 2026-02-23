@@ -1,4 +1,4 @@
-import cv2
+import cv2, traceback
 from picamera2 import Picamera2
 from config import CAM_RESOLUTION, CAM_FPS
 from Utils.common import log
@@ -17,7 +17,7 @@ class Camera:
             self.cam.start()
             log(f"Camera started with res={CAM_RESOLUTION}, fps={CAM_FPS}")
         except Exception as e:
-            log(f"Camera init/start failed: {e}")
+            log(f"Camera init/start failed: {e}\n{traceback.format_exc()}")
             self.cam = None
             raise
 
@@ -28,7 +28,7 @@ class Camera:
             frame = self.cam.capture_array()
             return frame
         except Exception as e:
-            log(f"Camera capture error: {e}")
+            log(f"Camera capture error: {e}\n{traceback.format_exc()}")
             return None
 
     def stop(self):
@@ -37,5 +37,5 @@ class Camera:
                 self.cam.stop()
                 log("Camera stopped.")
             except Exception as e:
-                log(f"Camera stop error: {e}")
+                log(f"Camera stop error: {e}\n{traceback.format_exc()}")
             self.cam = None

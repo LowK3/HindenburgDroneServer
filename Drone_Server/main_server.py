@@ -1,5 +1,4 @@
-import threading, sys, time
-from config import MAX_TCP_WAIT
+import threading, sys, time, traceback
 from Hardware.camera_manager import Camera
 from Network.discovery_server import DiscoveryServer
 from Network.udp_video_server import VideoServer
@@ -21,7 +20,19 @@ class ServerApp:
         log("Starting server application")
 
         cam = Camera()
-        cam.start()
+        camera_running = False
+
+        for attempt in range(8): 
+            try:
+                cam.start()
+                camera_running = True
+                break
+            except Exception as e:
+                log(f"Camera init failed (Attempt {attempt+1}/6). Retrying in 5s...")
+                time.sleep(5)
+                
+        if not camera_running:
+            log("[CRITICAL] Camera failed to initialize. Drone will run blind!")
 
         discovery = DiscoveryServer()
         discovery.start()
@@ -65,7 +76,7 @@ class ServerApp:
             log("KeyboardInterrupt caught, shutting down")
             self.request_shutdown()
         except Exception as e:
-            log(f"Unexpected error in main loop: {e}")
+            log(f"Unexpected error in main loop: {e}\n{traceback.format_exc()}")
             self.request_shutdown()
         finally:
             log("Pi Server shutting down...")

@@ -1,4 +1,4 @@
-import socket, struct, time
+import socket, struct, time, traceback
 from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT
 from Utils.common import log
 
@@ -46,7 +46,7 @@ class ControlServer:
                     if cmd:
                         self.engine.execute(cmd)
         except Exception as e:
-            log(f"Control socket error: {e}")
+            log(f"Control socket error: {e}\n{traceback.format_exc()}")
         finally:
             self.is_connected = False
             conn.close()

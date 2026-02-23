@@ -1,5 +1,4 @@
 """ Video network ports """
-TCP_PORT = 8485
 UDP_PORT = 37020
 UDP_VIDEO_PORT = 8486
 
@@ -10,15 +9,12 @@ CONTROL_TCP_PORT = 8600
 CAM_RESOLUTION = (1680, 1232)
 CAM_FPS = 30
 JPEG_QUALITY = 60
-FORMAT = ".jpeg"
 
 FRAME_INTERVAL = 1.0 / CAM_FPS
 
 """ Connection timeouts """
 UDP_TIMEOUT = 0.25
-TCP_ACCEPT_TIMEOUT = 2.0
 TCP_SEND_TIMEOUT = 8.0
-MAX_TCP_WAIT = 10.0
 
 """ Logging """
 LOG_PREFIX = "[SERVER]"

@@ -1,5 +1,5 @@
-import socket, struct, math, time, cv2, simplejpeg
-from config import UDP_VIDEO_PORT, FRAME_INTERVAL, JPEG_QUALITY, FORMAT
+import socket, struct, math, time, cv2, simplejpeg, traceback
+from config import UDP_VIDEO_PORT, FRAME_INTERVAL, JPEG_QUALITY
 from Utils.common import log
 
 class VideoServer:
@@ -34,7 +34,7 @@ class VideoServer:
                 try:
                     data = simplejpeg.encode_jpeg(frame, quality=JPEG_QUALITY, colorspace='RGB')
                 except Exception as e:
-                    log(f"Encode failed: {e}")
+                    log(f"Encode failed: {e}\n{traceback.format_exc()}")
                     continue
 
                 length = len(data)
@@ -51,7 +51,7 @@ class VideoServer:
                 time.sleep(FRAME_INTERVAL)
                 
         except Exception as e:
-            log(f"UDP Stream error: {e}")
+            log(f"UDP Stream error: {e}\n{traceback.format_exc()}")
         finally:
             log(f"Stopped streaming to {client_ip}")
 
@@ -61,5 +61,5 @@ class VideoServer:
                 self.sock.close()
                 log("Video UDP socket closed")
             except Exception as e:
-                log(f"Video socket close error: {e}")
+                log(f"Video socket close error: {e}\n{traceback.format_exc()}")
             self.sock = None
