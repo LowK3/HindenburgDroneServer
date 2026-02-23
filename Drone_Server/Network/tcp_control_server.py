@@ -4,6 +4,7 @@ from Utils.common import log
 
 class ControlServer:
     """ Dedicated TCP server for receiving movement commands. """
+
     def __init__(self, engine_manager):
         self.engine = engine_manager
         self.sock = None
@@ -14,10 +15,11 @@ class ControlServer:
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(("", CONTROL_TCP_PORT))
         self.sock.listen(1)
-        log(f"Control server listening on TCP {CONTROL_TCP_PORT}")
+        log(f"Control server listening on TCP {CONTROL_TCP_PORT}.")
 
     def accept_client(self, shutdown_flag):
         """ Blocking accept loop for incoming command connections. """
+
         while not shutdown_flag():
             try:
                 conn, addr = self.sock.accept()
@@ -54,4 +56,4 @@ class ControlServer:
     def stop(self):
         if self.sock:
             self.sock.close()
-            log("Control TCP socket closed")
+            log("Control TCP socket closed.")

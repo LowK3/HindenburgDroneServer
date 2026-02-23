@@ -35,7 +35,7 @@ class Camera:
         if self.cam is not None:
             try:
                 self.cam.stop()
-                log("Camera stopped")
+                log("Camera stopped.")
             except Exception as e:
                 log(f"Camera stop error: {e}")
             self.cam = None

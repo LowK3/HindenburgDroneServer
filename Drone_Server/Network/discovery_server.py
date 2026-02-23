@@ -4,6 +4,7 @@ from Utils.common import log
 
 class DiscoveryServer:
     """Listens for "PC_CLIENT" on UDP and replies "PI_SERVER:<TCP_PORT>"."""
+
     def __init__(self):
         self.sock = None
 
@@ -18,13 +19,14 @@ class DiscoveryServer:
             log(f"Could not bind UDP socket to eth0: {e}")
         self.sock.bind(("0.0.0.0", UDP_PORT))
         self.sock.settimeout(UDP_TIMEOUT)
-        log(f"Discovery server listening on UDP port {UDP_PORT}")
+        log(f"Discovery server listening on UDP port {UDP_PORT}.")
 
     def listen_once(self):
+        """ 
+        Returns client address if discovered, else None. 
+        Does NOT block indefinitely (uses UDP_TIMEOUT). 
         """
-        Returns client address if discovered, else None.
-        Does NOT block indefinitely (uses UDP_TIMEOUT).
-        """
+
         try:
             data, addr = self.sock.recvfrom(1024)
         except socket.timeout:
@@ -54,7 +56,7 @@ class DiscoveryServer:
         if self.sock:
             try:
                 self.sock.close()
-                log("Discovery socket closed")
+                log("Discovery socket closed.")
             except Exception as e:
                 log(f"Discovery socket close error: {e}")
             self.sock = None

@@ -1,7 +1,7 @@
 from .engines import Engine, NEUTRAL, MAX_FORWARD, MAX_REVERSE
 
 class RearEngines:
-    """ Controls the rear pair for forward/backward and turning (differential). """
+    """ Controls the rear thrusters for forward/backward and turning. """
 
     def __init__(self, pi, left_pin, right_pin):
         self.left = Engine(pi, left_pin)

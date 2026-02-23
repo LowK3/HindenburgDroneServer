@@ -53,7 +53,7 @@ class ServerApp:
                     continue
 
                 client_ip = addr[0]
-                log(f"Discovered client at {client_ip}. Starting UDP Video stream!")
+                log(f"Discovered client at {client_ip}.")
 
                 # 2) Stream via UDP. (The Control Server handles its own TCP connections in the background thread!)
                 video_server.stream_to_client(client_ip, self.shutdown_flag, lambda: check_keyboard(self._shutdown), control_server)

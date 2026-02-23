@@ -1,7 +1,7 @@
 from .engines import Engine, NEUTRAL
 
 class FrontEngines:
-    """ Controls front pair for up/down tilt. """
+    """ Controls front thrusters for up/down tilt. """
 
     def __init__(self, pi, left_pin, right_pin):
         self.left = Engine(pi, left_pin)

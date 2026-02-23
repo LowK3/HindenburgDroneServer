@@ -5,7 +5,7 @@ from .front_engines import FrontEngines
 from Utils.common import log
 
 class EngineManager:
-    """ High-level engine control accepting commands from control TCP server. """
+    """ Engine control accepting commands from control TCP server. """
 
     def __init__(self):
         self.pi = pigpio.pi()
