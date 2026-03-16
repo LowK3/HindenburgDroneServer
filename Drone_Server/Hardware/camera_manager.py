@@ -1,4 +1,5 @@
-import cv2, traceback
+import cv2, traceback, io
+from threading import Condition
 from picamera2 import Picamera2
 from picamera2.encoders import MJPEGEncoder
 from config import CAM_RESOLUTION, CAM_FPS
