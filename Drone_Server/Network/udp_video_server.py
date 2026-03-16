@@ -31,7 +31,7 @@ class VideoServer:
                 if frame is None:
                     continue
 
-                data = frame
+                data = frame.tobytes() 
                 length = len(data)
                 num_chunks = math.ceil(length / self.max_chunk_size)
 
