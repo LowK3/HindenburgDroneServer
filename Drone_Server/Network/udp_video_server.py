@@ -1,5 +1,5 @@
 import socket, struct, math, time, cv2, simplejpeg, traceback
-from config import UDP_VIDEO_PORT, FRAME_INTERVAL, JPEG_QUALITY, CONNECTION_TIMEOUT
+from config import UDP_VIDEO_PORT, JPEG_QUALITY, CONNECTION_TIMEOUT
 from Utils.common import log
 
 class VideoServer:
