@@ -7,7 +7,7 @@ class VideoServer:
         self.camera = camera
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.frame_id = 0
-        self.max_chunk_size = 1400 # Safe lan byte limit
+        self.max_chunk_size = 60000 # Safe lan byte limit
 
     def start(self):
         log("UDP Video server initialized.")
