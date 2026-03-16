@@ -45,6 +45,8 @@ class ControlServer:
                     cmd = cmd.strip()
                     if cmd:
                         self.engine.execute(cmd)
+        except socket.timeout:
+            log("Client heartbeat lost! Stopping drone safely.")
         except Exception as e:
             log(f"Control socket error: {e}\n{traceback.format_exc()}")
         finally:
