@@ -1,3 +1,4 @@
+from re import I
 import threading, sys, time, traceback
 from Hardware.camera_manager import Camera
 from Network.discovery_server import DiscoveryServer
@@ -5,6 +6,7 @@ from Network.udp_video_server import VideoServer
 from Network.tcp_control_server import ControlServer
 from Hardware.Engines.engine_manager import EngineManager
 from Utils.common import log, check_keyboard
+from config import TIMEOUT
 
 class ServerApp:
     def __init__(self):
@@ -56,7 +58,6 @@ class ServerApp:
             while not self.shutdown_flag():
                 check_keyboard(self._shutdown)
 
-                # 1) Discovery (non-blocking)
                 addr = discovery.listen_once()
                 if self.shutdown_flag():
                     break
@@ -64,9 +65,17 @@ class ServerApp:
                     continue
 
                 client_ip = addr[0]
-                log(f"Discovered client at {client_ip}.")
+                log(f"Discovered client at {client_ip}. Waiting for TCP handshake...")
 
-                # 2) Stream via UDP. (The Control Server handles its own TCP connections in the background thread!)
+                handshake_timeout = time.time() + TIMEOUT
+                while time.time() < handshake_timeout and not control_server.is_connected:
+                    time.sleep(0.1)
+
+                if not control_server.is_connected:
+                    log("Client missed the UDP reply. Returning to discovery immediately...")
+                    continue
+
+                # Stream via UDP. (Only executes if the handshake above succeeded!)
                 video_server.stream_to_client(client_ip, self.shutdown_flag, lambda: check_keyboard(self._shutdown), control_server)
 
                 log("Stream ended. Returning to discovery...")

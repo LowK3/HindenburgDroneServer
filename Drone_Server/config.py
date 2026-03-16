@@ -15,6 +15,7 @@ FRAME_INTERVAL = 1.0 / CAM_FPS
 """ Connection timeouts """
 UDP_TIMEOUT = 0.25
 TCP_SEND_TIMEOUT = 0.5
+TIMEOUT = 1.5
 
 """ Logging """
 LOG_PREFIX = "[SERVER]"
