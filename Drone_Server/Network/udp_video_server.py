@@ -31,9 +31,15 @@ class VideoServer:
                 if frame is None:
                     continue
 
-                data = frame.tobytes() 
-                length = len(data)
-                num_chunks = math.ceil(length / self.max_chunk_size)
+                data = frame.tobytes()
+
+                # Search backwards to find the exact End of the JPEG (FF D9)
+                eoi = data.rfind(b'\xff\xd9')
+                if eoi != -1:
+                    # Slice off all the megabytes of empty zeroes!
+                    data = data[:eoi + 2] 
+                else:
+                    continue
 
                 length = len(data)
                 num_chunks = math.ceil(length / self.max_chunk_size)
