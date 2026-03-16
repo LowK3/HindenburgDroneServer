@@ -41,7 +41,7 @@ class VideoServer:
                 for i in range(num_chunks):
                     chunk = data[i * self.max_chunk_size : (i+1) * self.max_chunk_size]
                     # Header: MagicByte(0xAA), FrameID, ChunkIndex, TotalChunks
-                    header = struct.pack("<BIBB", 0xAA, self.frame_id, i, num_chunks)
+                    header = struct.pack("<BIHH", 0xAA, self.frame_id, i, num_chunks)
                     self.sock.sendto(header + chunk, (client_ip, UDP_VIDEO_PORT))
 
                 self.frame_id = (self.frame_id + 1) % 4294967295
