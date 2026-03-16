@@ -24,7 +24,7 @@ class ServerApp:
         cam = Camera()
         camera_running = False
 
-        for attempt in range(8): 
+        for attempt in range(3): 
             try:
                 cam.start()
                 camera_running = True

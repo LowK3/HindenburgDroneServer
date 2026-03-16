@@ -1,4 +1,4 @@
-import cv2, traceback, io
+import cv2, traceback
 from threading import Condition
 from picamera2 import Picamera2
 from picamera2.encoders import MJPEGEncoder
@@ -11,12 +11,10 @@ class StreamingOutput(io.BufferedIOBase):
         self.frame = None
         self.condition = Condition()
 
-    def write(self, buf):
-        # Catch the finished JPEG from the hardware and notify the main thread!
+    def outputframe(self, frame, keyframe=True, timestamp=None, **kwargs):
         with self.condition:
-            self.frame = buf
+            self.frame = frame
             self.condition.notify_all()
-        return len(buf)
 
 class Camera:
     def __init__(self):
