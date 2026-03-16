@@ -1,4 +1,4 @@
-import socket, struct, math, time, cv2, simplejpeg, traceback
+import socket, struct, math, time, cv2, traceback
 from config import UDP_VIDEO_PORT, JPEG_QUALITY, CONNECTION_TIMEOUT
 from Utils.common import log
 
