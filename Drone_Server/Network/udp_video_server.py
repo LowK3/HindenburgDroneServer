@@ -27,11 +27,11 @@ class VideoServer:
                     log("Client TCP control lost. Stopping UDP video stream.")
                     break
 
-                frame = self.camera.capture_frame()
-                if not frame:
+                data = self.camera.capture_frame()
+                if not data:
                     continue
 
-                length = len(frame)
+                length = len(data)
                 num_chunks = math.ceil(length / self.max_chunk_size)
 
                 for i in range(num_chunks):
