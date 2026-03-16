@@ -6,7 +6,7 @@ from Network.udp_video_server import VideoServer
 from Network.tcp_control_server import ControlServer
 from Hardware.Engines.engine_manager import EngineManager
 from Utils.common import log, check_keyboard
-from config import TIMEOUT
+from config import CONNECTION_TIMEOUT
 
 class ServerApp:
     def __init__(self):
@@ -67,7 +67,7 @@ class ServerApp:
                 client_ip = addr[0]
                 log(f"Discovered client at {client_ip}. Waiting for TCP handshake...")
 
-                handshake_timeout = time.time() + TIMEOUT
+                handshake_timeout = time.time() + CONNECTION_TIMEOUT
                 while time.time() < handshake_timeout and not control_server.is_connected:
                     time.sleep(0.1)
 

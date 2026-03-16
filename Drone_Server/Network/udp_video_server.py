@@ -1,5 +1,5 @@
 import socket, struct, math, time, cv2, simplejpeg, traceback
-from config import UDP_VIDEO_PORT, FRAME_INTERVAL, JPEG_QUALITY
+from config import UDP_VIDEO_PORT, FRAME_INTERVAL, JPEG_QUALITY, CONNECTION_TIMEOUT
 from Utils.common import log
 
 class VideoServer:
@@ -15,14 +15,14 @@ class VideoServer:
     def stream_to_client(self, client_ip, shutdown_flag, poll_keyboard, control_server):
         log(f"Starting UDP stream to {client_ip}:{UDP_VIDEO_PORT}")
 
-        connection_timeout = time.time() + 5.0
+        connection_timeout = time.time() + CONNECTION_TIMEOUT
 
         try:
             while not shutdown_flag():
                 poll_keyboard()
 
                 if control_server.is_connected:
-                    connection_timeout = time.time() + 3.0
+                    connection_timeout = time.time() + CONNECTION_TIMEOUT
                 elif time.time() > connection_timeout:
                     log("Client TCP control lost. Stopping UDP video stream.")
                     break
@@ -31,16 +31,13 @@ class VideoServer:
                 if frame is None:
                     continue
 
-                try:
-                    data = simplejpeg.encode_jpeg(frame, quality=JPEG_QUALITY, colorspace='RGB')
-                except Exception as e:
-                    log(f"Encode failed: {e}\n{traceback.format_exc()}")
-                    continue
+                data = frame
+                length = len(data)
+                num_chunks = math.ceil(length / self.max_chunk_size)
 
                 length = len(data)
                 num_chunks = math.ceil(length / self.max_chunk_size)
 
-                # Send chunks
                 for i in range(num_chunks):
                     chunk = data[i * self.max_chunk_size : (i+1) * self.max_chunk_size]
                     # Header: MagicByte(0xAA), FrameID, ChunkIndex, TotalChunks
@@ -48,7 +45,6 @@ class VideoServer:
                     self.sock.sendto(header + chunk, (client_ip, UDP_VIDEO_PORT))
 
                 self.frame_id = (self.frame_id + 1) % 4294967295
-                time.sleep(FRAME_INTERVAL)
                 
         except Exception as e:
             log(f"UDP Stream error: {e}\n{traceback.format_exc()}")
