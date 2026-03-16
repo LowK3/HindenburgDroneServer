@@ -2,10 +2,11 @@ import cv2, traceback
 from threading import Condition
 from picamera2 import Picamera2
 from picamera2.encoders import MJPEGEncoder
+from picamera2.outputs import Output
 from config import CAM_RESOLUTION, CAM_FPS
 from Utils.common import log
 
-class StreamingOutput(io.BufferedIOBase):
+class StreamingOutput(Output):
     """ Bridges the asynchronous hardware encoder to your synchronous UDP loop """
     def __init__(self):
         self.frame = None
