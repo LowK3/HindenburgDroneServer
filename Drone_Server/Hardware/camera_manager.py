@@ -12,7 +12,7 @@ class StreamingOutput(Output):
         self.frame = None
         self.condition = Condition()
 
-    def outputframe(self, frame, keyframe=True, timestamp=None, **kwargs):
+    def outputframe(self, frame, keyframe=True, timestamp=None, *args, **kwargs):
         with self.condition:
             self.frame = frame
             self.condition.notify_all()
