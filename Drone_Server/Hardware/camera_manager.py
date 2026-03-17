@@ -6,7 +6,6 @@ from Utils.common import log
 class Camera:
     def __init__(self):
         self.cam = None
-        self.output = StreamingOutput()
 
     def start(self):
         try:
