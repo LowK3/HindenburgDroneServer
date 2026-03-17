@@ -1,21 +1,7 @@
 import cv2, traceback
-from threading import Condition
 from picamera2 import Picamera2
-from picamera2.encoders import MJPEGEncoder
-from picamera2.outputs import Output
 from config import CAM_RESOLUTION, CAM_FPS
 from Utils.common import log
-
-class StreamingOutput(Output):
-    """ Bridges the asynchronous hardware encoder to your synchronous UDP loop """
-    def __init__(self):
-        self.frame = None
-        self.condition = Condition()
-
-    def outputframe(self, frame, keyframe=True, timestamp=None, *args, **kwargs):
-        with self.condition:
-            self.frame = frame
-            self.condition.notify_all()
 
 class Camera:
     def __init__(self):
@@ -26,10 +12,9 @@ class Camera:
         try:
             self.cam = Picamera2()
             cfg = self.cam.create_video_configuration(
-                main={"size": CAM_RESOLUTION, "format": "YUV420"},
+                main={"size": CAM_RESOLUTION, "format": "RGB888"},
                 controls={"FrameRate": CAM_FPS})
             self.cam.configure(cfg)
-            self.cam.start_encoder(MJPEGEncoder(), self.output)
             self.cam.start()
             log(f"Camera started with res={CAM_RESOLUTION}, fps={CAM_FPS}")
         except Exception as e:
@@ -41,11 +26,8 @@ class Camera:
         if self.cam is None:
             return None
         try:
-            with self.output.condition:
-                if self.output.condition.wait(timeout=1.0): 
-                    return self.output.frame
-                else:
-                    return None
+            frame = self.cam.capture_array()
+            return frame
         except Exception as e:
             log(f"Camera capture error: {e}\n{traceback.format_exc()}")
             return None
@@ -53,7 +35,6 @@ class Camera:
     def stop(self):
         if self.cam is not None:
             try:
-                self.cam.stop_encoder()
                 self.cam.stop()
                 log("Camera stopped.")
             except Exception as e:

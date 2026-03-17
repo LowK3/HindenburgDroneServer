@@ -1,4 +1,4 @@
-import socket, struct, math, time, cv2, traceback
+import socket, struct, math, time, cv2, traceback, simplejpeg
 from config import UDP_VIDEO_PORT, JPEG_QUALITY, CONNECTION_TIMEOUT
 from Utils.common import log
 
@@ -27,8 +27,14 @@ class VideoServer:
                     log("Client TCP control lost. Stopping UDP video stream.")
                     break
 
-                data = self.camera.capture_frame()
-                if not data:
+                frame = self.camera.capture_frame()
+                if frame is None:
+                    continue
+
+                try:
+                    data = simplejpeg.encode_jpeg(frame, quality=JPEG_QUALITY, colorspace='RGB')
+                except Exception as e:
+                    log(f"Encode failed: {e}\n{traceback.format_exc()}")
                     continue
 
                 length = len(data)
@@ -37,7 +43,7 @@ class VideoServer:
                 for i in range(num_chunks):
                     chunk = data[i * self.max_chunk_size : (i+1) * self.max_chunk_size]
                     # Header: MagicByte(0xAA), FrameID, ChunkIndex, TotalChunks
-                    header = struct.pack("<BIHH", 0xAA, self.frame_id, i, num_chunks)
+                    header = struct.pack("<BIBB", 0xAA, self.frame_id, i, num_chunks)
                     self.sock.sendto(header + chunk, (client_ip, UDP_VIDEO_PORT))
 
                 self.frame_id = (self.frame_id + 1) % 4294967295
