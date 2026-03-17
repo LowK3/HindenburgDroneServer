@@ -1,10 +1,9 @@
-import socket, struct, time, traceback
+import socket, struct, time, traceback, json
 from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT
 from Utils.common import log
 
 class ControlServer:
     """ Dedicated TCP server for receiving movement commands. """
-
     def __init__(self, engine_manager):
         self.engine = engine_manager
         self.sock = None
@@ -41,10 +40,14 @@ class ControlServer:
                 
                 # Extract and execute all complete commands in the buffer
                 while "\n" in buffer:
-                    cmd, buffer = buffer.split("\n", 1)
-                    cmd = cmd.strip()
-                    if cmd:
-                        self.engine.execute(cmd)
+                    cmd_str, buffer = buffer.split("\n", 1)
+                    cmd_str = cmd_str.strip()
+                    if cmd_str:
+                        try:
+                            cmd = json.loads(cmd_str)
+                            self.engine.execute(cmd)
+                        except json.JSONDecodeError:
+                            log(f"Ignored malformed JSON command: {cmd_str}")
         except socket.timeout:
             log("Client heartbeat lost! Stopping drone safely.")
         except Exception as e:

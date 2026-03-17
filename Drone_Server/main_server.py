@@ -30,7 +30,7 @@ class ServerApp:
                 camera_running = True
                 break
             except Exception as e:
-                log(f"Camera init failed (Attempt {attempt+1}/8). Retrying in 5s...")
+                log(f"Camera init failed (Attempt {attempt+1}/3). Retrying in 5s...")
                 time.sleep(5)
                 
         if not camera_running:
@@ -44,6 +44,10 @@ class ServerApp:
         log("Server ready. Press 'q' then Enter to stop.")
 
         engine_mgr = EngineManager()
+        # Safety delay to allow ESCs to initialize and prevent accidental motor spin on startup
+        log("Arming ESCs... Please wait 3 seconds.")
+        time.sleep(3)
+        log("ESCs Armed.")
         control_server = ControlServer(engine_mgr)
         control_server.start()
 

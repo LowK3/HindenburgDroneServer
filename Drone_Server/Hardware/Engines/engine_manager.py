@@ -13,8 +13,8 @@ class EngineManager:
         self.front = FrontEngines(self.pi, FRONT_LEFT_PIN, FRONT_RIGHT_PIN)
         self.last_cmd = None
 
-    def execute(self, cmd: str):
-        cmd = cmd.upper()
+    def execute(self, cmd: dict):
+        cmd = cmd.get("cmd", "").upper()
 
         if cmd == self.last_cmd:
             return

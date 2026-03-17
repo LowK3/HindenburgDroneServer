@@ -12,6 +12,7 @@ class Engine:
         self.pi.set_mode(self.pin, pigpio.OUTPUT)
         self.pi.set_PWM_frequency(self.pin, PWM_FREQUENCY)
         self.pi.set_PWM_range(self.pin, PWM_RANGE)
+        self.pi.set_watchdog(self.pin, 500)
         self.set_duty(NEUTRAL)
         log(f"[Engine] Initialized engine on GPIO {pin}")
 

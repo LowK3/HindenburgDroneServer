@@ -7,8 +7,8 @@ CONTROL_TCP_PORT = 8600
 
 """ Camera settings """
 CAM_RESOLUTION = (1680, 1232)
-CAM_FPS = 60
-JPEG_QUALITY = 50
+CAM_FPS = 50
+JPEG_QUALITY = 60
 
 """ Connection timeouts """
 UDP_TIMEOUT = 0.25
