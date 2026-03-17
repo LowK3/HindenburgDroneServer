@@ -55,7 +55,7 @@ class ControlServer:
         finally:
             self.is_connected = False
             conn.close()
-            self.engine.execute("STOP")
+            self.engine.execute({"cmd": "STOP"})
             log(f"Control client disconnected: {addr}")
 
     def stop(self):
