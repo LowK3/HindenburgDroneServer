@@ -27,10 +27,7 @@ def log(msg: str):
     logger.info(msg)
 
 def check_keyboard(shutdown_event):
-    """
-    Non-blocking check for 'q' key in stdin.
-    Sets the given shutdown_event if pressed.
-    """
+    """ Non-blocking check for 'q' key in stdin. Sets the given shutdown_event if pressed. """
     try:
         dr, _, _ = select.select([sys.stdin], [], [], 0)
         if dr:
@@ -41,3 +38,15 @@ def check_keyboard(shutdown_event):
     except Exception:
         # ignore any stdin/select failures silently
         pass
+
+def global_crash_handler(exc_type, exc_value, exc_tb):
+    """ Catches any fatal crash in the app and saves it to the log file. """
+    # Ignore normal manual shutdowns (like pressing Ctrl+C)
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_tb)
+        return
+        
+    crash_report = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    log(f"[CRITICAL SERVER CRASH]:\n{crash_report}")
+
+sys.excepthook = global_crash_handler
