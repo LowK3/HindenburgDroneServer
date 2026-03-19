@@ -48,7 +48,6 @@ class DiscoveryServer:
                 return None
             return addr
 
-        # Unknown datagram
         log(f"Discovery: unexpected data from {addr}: {data!r}")
         return None
 

@@ -1,4 +1,4 @@
-import cv2, traceback
+import cv2, traceback, threading
 from picamera2 import Picamera2
 from config import CAM_RESOLUTION, CAM_FPS
 from Utils.common import log
@@ -34,8 +34,15 @@ class Camera:
     def stop(self):
         if self.cam is not None:
             try:
-                self.cam.stop()
-                log("Camera stopped.")
+                stop_thread = threading.Thread(target=self.cam.stop)
+                stop_thread.start()
+                stop_thread.join(timeout=2.0)
+
+                if stop_thread.is_alive():
+                    log("WARNING: Camera stop timed out (Hardware likely disconnected!). Abandoning camera.")
+                else:
+                    log("Camera stopped cleanly.")
             except Exception as e:
                 log(f"Camera stop error: {e}\n{traceback.format_exc()}")
-            self.cam = None
+            finally:
+                self.cam = None
