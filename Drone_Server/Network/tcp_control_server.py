@@ -55,6 +55,8 @@ class ControlServer:
                             log(f"Ignored malformed JSON command: {cmd_str}")
         except socket.timeout:
             log("Client heartbeat lost! Stopping drone safely.")
+        except ConnectionResetError:
+            log("Client abruptly disconnected. Stopping drone safely.")
         except Exception as e:
             log(f"Control socket error: {e}\n{traceback.format_exc()}")
         finally:
