@@ -27,11 +27,16 @@ class VideoServer:
                     log("Client TCP control lost. Stopping UDP video stream.")
                     break
 
-                frame_bytes = self.camera.capture_frame()
-                if frame_bytes is None:
+                frame = self.camera.capture_frame()
+                if frame is None:
                     continue
 
-                data = bytes(frame_bytes)
+                try:
+                    data = simplejpeg.encode_jpeg(frame, quality=JPEG_QUALITY, colorspace='RGB')
+                except Exception as e:
+                    log(f"Encode failed: {e}\n{traceback.format_exc()}")
+                    continue
+
                 length = len(data)
                 num_chunks = math.ceil(length / self.max_chunk_size)
 

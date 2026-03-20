@@ -11,7 +11,7 @@ class Camera:
         try:
             self.cam = Picamera2()
             cfg = self.cam.create_video_configuration(
-                main={"size": CAM_RESOLUTION, "format": "MJPEG"},
+                main={"size": CAM_RESOLUTION, "format": "RGB888"},
                 controls={"FrameRate": CAM_FPS})
             self.cam.configure(cfg)
             self.cam.start()
@@ -25,7 +25,8 @@ class Camera:
         if self.cam is None:
             return None
         try:
-            return self.cam.capture_buffer("main")
+            frame = self.cam.capture_array()
+            return frame
         except Exception as e:
             log(f"Camera capture error: {e}\n{traceback.format_exc()}")
             return None
