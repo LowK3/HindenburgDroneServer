@@ -1,6 +1,6 @@
 import cv2, traceback, threading
 from picamera2 import Picamera2
-from config import CAM_RESOLUTION, CAM_FPS
+from config import NATIVE_RESOLUTION, CAM_RESOLUTION, CAM_FPS
 from Utils.common import log
 
 class Camera:
@@ -11,7 +11,7 @@ class Camera:
         try:
             self.cam = Picamera2()
             cfg = self.cam.create_video_configuration(
-                sensor={"output_size": (1680, 1232)},
+                sensor={"output_size": NATIVE_RESOLUTION},
                 main={"size": CAM_RESOLUTION, "format": "RGB888"},
                 controls={"FrameRate": CAM_FPS})
             self.cam.configure(cfg)

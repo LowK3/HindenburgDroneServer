@@ -35,6 +35,7 @@
     <Compile Include="Network\udp_video_server.py" />
     <Compile Include="Network\__init__.py" />
     <Compile Include="Utils\common.py" />
+    <Compile Include="Utils\rasp_telemetry.py" />
     <Compile Include="Utils\__init__.py" />
   </ItemGroup>
   <ItemGroup>

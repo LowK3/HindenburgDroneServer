@@ -1,5 +1,6 @@
 import socket, struct, time, traceback, json
 from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT
+from Utils.rasp_telemetry import get_system_telemetry
 from Utils.common import log
 
 class ControlServer:
@@ -46,6 +47,10 @@ class ControlServer:
                         try:
                             cmd = json.loads(cmd_str)
                             self.engine.execute(cmd)
+
+                            telemetry = get_system_telemetry()
+                            reply_str = json.dumps(telemetry) + "\n"
+                            conn.sendall(reply_str.encode())
                         except json.JSONDecodeError:
                             log(f"Ignored malformed JSON command: {cmd_str}")
         except socket.timeout:
