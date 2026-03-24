@@ -26,7 +26,7 @@ FRONT_LEFT_PIN = 5
 FRONT_RIGHT_PIN = 7
 
 """ Sensor pins """
-WATER_DETECTION_PIN = 7
+WATER_DETECTION_PIN = 4
 
 """ PWM settings """
 PWM_FREQUENCY = 50
