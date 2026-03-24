@@ -6,7 +6,6 @@ from Utils.common import log
 
 class EngineManager:
     """ Engine control accepting commands from control TCP server. """
-
     def __init__(self):
         self.pi = pigpio.pi()
         self.rear = RearEngines(self.pi, REAR_LEFT_PIN, REAR_RIGHT_PIN)

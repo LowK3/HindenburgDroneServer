@@ -3,7 +3,6 @@ from config import DEFAULT_POWER
 
 class RearEngines:
     """ Controls the rear thrusters for forward/backward and turning. """
-
     def __init__(self, pi, left_pin, right_pin):
         self.left = Engine(pi, left_pin)
         self.right = Engine(pi, right_pin)

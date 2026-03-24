@@ -1,4 +1,4 @@
-import psutil, pigpio
+import psutil, pigpio, smbus2, bme280
 from config import WATER_DETECTION_PIN
 
 pi = pigpio.pi()
@@ -6,6 +6,15 @@ pi = pigpio.pi()
 if pi.connected:
     pi.set_mode(WATER_DETECTION_PIN, pigpio.INPUT)
     pi.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
+
+I2C_PORT = 1
+BME280_ADDRESS = 0x76 # (If this fails later, try 0x77)
+try:
+    bus = smbus2.SMBus(I2C_PORT)
+    bme_calibration = bme280.load_calibration_params(bus, BME280_ADDRESS)
+    bme_connected = True
+except Exception:
+    bme_connected = False
 
 def get_system_telemetry(engine_manager):
     """ Gathers internal Drone telemetry and returns a JSON-ready dictionary """
@@ -27,6 +36,16 @@ def get_system_telemetry(engine_manager):
 
     engine_data = engine_manager.get_telemetry_data() if engine_manager else {}
 
+    hull_temp = 0.0
+    hull_hum = 0.0
+    if bme_connected:
+        try:
+            bme_data = bme280.sample(bus, BME280_ADDRESS, bme_calibration)
+            hull_temp = bme_data.temperature
+            hull_hum = bme_data.humidity
+        except Exception:
+            pass
+
     return {
         "type": "TELEMETRY",
         "cpu_temp": round(temp_c, 1),
@@ -35,5 +54,7 @@ def get_system_telemetry(engine_manager):
         "low_power": low_voltage,
         "leak_detected": leak_detected,
         "front_power": engine_data.get("front_power_pct", 0),
-        "rear_power": engine_data.get("rear_power_pct", 0)
+        "rear_power": engine_data.get("rear_power_pct", 0),
+        "hull_temp": round(hull_temp, 1),
+        "hull_hum": round(hull_hum, 1)
     }
