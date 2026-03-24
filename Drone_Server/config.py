@@ -25,6 +25,9 @@ REAR_RIGHT_PIN = 21
 FRONT_LEFT_PIN = 5
 FRONT_RIGHT_PIN = 7
 
+""" Default motor power """
+DEFAULT_POWER = 9
+
 """ Sensor pins """
 WATER_DETECTION_PIN = 4
 

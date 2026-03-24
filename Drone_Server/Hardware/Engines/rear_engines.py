@@ -1,4 +1,5 @@
 from .engines import Engine, NEUTRAL, MAX_FORWARD, MAX_REVERSE
+from config import DEFAULT_POWER
 
 class RearEngines:
     """ Controls the rear thrusters for forward/backward and turning. """
@@ -6,7 +7,7 @@ class RearEngines:
     def __init__(self, pi, left_pin, right_pin):
         self.left = Engine(pi, left_pin)
         self.right = Engine(pi, right_pin)
-        self.power = 8
+        self.power = DEFAULT_POWER
 
     def forward(self):
         self.left.set_duty(NEUTRAL + self.power)
