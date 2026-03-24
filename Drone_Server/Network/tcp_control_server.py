@@ -48,7 +48,7 @@ class ControlServer:
                             cmd = json.loads(cmd_str)
                             self.engine.execute(cmd)
 
-                            telemetry = get_system_telemetry()
+                            telemetry = get_system_telemetry(self.engine)
                             reply_str = json.dumps(telemetry) + "\n"
                             conn.sendall(reply_str.encode())
                         except json.JSONDecodeError:
