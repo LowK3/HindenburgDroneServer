@@ -6,7 +6,7 @@ class RearEngines:
     def __init__(self, pi, left_pin, right_pin):
         self.left = Engine(pi, left_pin)
         self.right = Engine(pi, right_pin)
-        self.power = 10  # adjustable baseline throttle
+        self.power = 10
 
     def forward(self):
         self.left.set_duty(NEUTRAL + self.power)
@@ -33,3 +33,6 @@ class RearEngines:
 
     def decrease_power(self):
         self.power = max(self.power - 2, 5)
+
+    def get_power_percentage(self):
+        return int(((self.power - 5) / (25 - 5)) * 100)

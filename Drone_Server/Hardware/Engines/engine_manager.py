@@ -53,3 +53,9 @@ class EngineManager:
         self.rear.stop()
         self.front.stop()
         self.pi.stop()
+
+    def get_telemetry_data(self):
+        return {
+            "front_power_pct": self.front.get_power_percentage(),
+            "rear_power_pct": self.rear.get_power_percentage()
+        }

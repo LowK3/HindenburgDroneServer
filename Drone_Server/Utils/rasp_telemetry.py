@@ -7,7 +7,7 @@ if pi.connected:
     pi.set_mode(WATER_DETECTION_PIN, pigpio.INPUT)
     pi.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
 
-def get_system_telemetry():
+def get_system_telemetry(engine_manager):
     """ Gathers internal Drone telemetry and returns a JSON-ready dictionary """
     try:
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
@@ -25,11 +25,15 @@ def get_system_telemetry():
     if pi.connected:
         leak_detected = (pi.read(WATER_DETECTION_PIN) == 0)
 
+    engine_data = engine_manager.get_telemetry_data() if engine_manager else {}
+
     return {
         "type": "TELEMETRY",
         "cpu_temp": round(temp_c, 1),
         "cpu_usage": psutil.cpu_percent(interval=None),
         "ram_usage": psutil.virtual_memory().percent,
         "low_power": low_voltage,
-        "leak_detected": leak_detected
+        "leak_detected": leak_detected,
+        "front_power": engine_data.get("front_power_pct", 0),
+        "rear_power": engine_data.get("rear_power_pct", 0)
     }

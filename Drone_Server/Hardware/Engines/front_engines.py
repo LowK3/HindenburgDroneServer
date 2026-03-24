@@ -25,3 +25,6 @@ class FrontEngines:
 
     def decrease_power(self):
         self.power = max(self.power - 2, 5)
+
+    def get_power_percentage(self):
+        return int(((self.power - 5) / (25 - 5)) * 100)
