@@ -6,7 +6,7 @@ class FrontEngines:
     def __init__(self, pi, left_pin, right_pin):
         self.left = Engine(pi, left_pin)
         self.right = Engine(pi, right_pin)
-        self.power = 10
+        self.power = 8
 
     def tilt_up(self):
         self.left.set_duty(NEUTRAL + self.power)
