@@ -8,12 +8,13 @@ if pi.connected:
     pi.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
 
 I2C_PORT = 1
-BME280_ADDRESS = 0x76 # (If this fails later, try 0x77)
+BME280_ADDRESS = 0x76
 try:
     bus = smbus2.SMBus(I2C_PORT)
     bme_calibration = bme280.load_calibration_params(bus, BME280_ADDRESS)
     bme_connected = True
-except Exception:
+except Exception as e:
+    print(f"BME280 ERROR: {e}")
     bme_connected = False
 
 def get_system_telemetry(engine_manager):
@@ -43,7 +44,8 @@ def get_system_telemetry(engine_manager):
             bme_data = bme280.sample(bus, BME280_ADDRESS, bme_calibration)
             hull_temp = bme_data.temperature
             hull_hum = bme_data.humidity
-        except Exception:
+        except Exception as e:
+            print(f"BME280 READ ERROR: {e}")
             pass
 
     return {
