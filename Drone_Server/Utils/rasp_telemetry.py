@@ -1,7 +1,14 @@
-import psutil
+import psutil, pigpio
+from config import WATER_DETECTION_PIN
+
+pi = pigpio.pi()
+
+if pi.connected:
+    pi.set_mode(WATER_DETECTION_PIN, pigpio.INPUT)
+    pi.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
 
 def get_system_telemetry():
-    """ Gathers internal Pi health stats and returns a JSON-ready dictionary """
+    """ Gathers internal Drone telemetry and returns a JSON-ready dictionary """
     try:
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
             temp_c = int(f.read()) / 1000.0
@@ -14,10 +21,15 @@ def get_system_telemetry():
     except Exception:
         low_voltage = False
 
+    leak_detected = False
+    if pi.connected:
+        leak_detected = (pi.read(WATER_DETECTION_PIN) == 0)
+
     return {
         "type": "TELEMETRY",
         "cpu_temp": round(temp_c, 1),
         "cpu_usage": psutil.cpu_percent(interval=None),
         "ram_usage": psutil.virtual_memory().percent,
-        "low_power": low_voltage
+        "low_power": low_voltage,
+        "leak_detected": leak_detected
     }
