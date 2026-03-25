@@ -54,7 +54,8 @@ def get_system_telemetry(engine_manager):
             bme_data = bme280.sample(bus, BME280_ADDRESS, bme_calibration)
             hull_temp = bme_data.temperature
             hull_hum = bme_data.humidity
-        except Exception:
+        except Exception as e:
+            print(f"BME280 Read Error: {e}")
             pass
 
     pitch = 0.0
@@ -67,7 +68,8 @@ def get_system_telemetry(engine_manager):
             # Convert raw G-forces into degrees of tilt
             pitch = math.degrees(math.atan2(y, math.sqrt(x*x + z*z)))
             roll = math.degrees(math.atan2(-x, z))
-        except Exception:
+        except Exception as e:
+            print(f"Gyro Read Error: {e}")
             pass
 
     return {
