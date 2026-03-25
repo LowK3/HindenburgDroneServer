@@ -28,8 +28,11 @@ FRONT_RIGHT_PIN = 7
 """ Default motor power """
 DEFAULT_POWER = 9
 
-""" Sensor pins """
+""" Sensors """
 WATER_DETECTION_PIN = 4
+I2C_PORT = 1
+BME280_ADDRESS = 0x76
+GYRO_ADDRESS = 0x68
 
 """ PWM settings """
 PWM_FREQUENCY = 50

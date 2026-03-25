@@ -1,15 +1,16 @@
-import psutil, pigpio, smbus2, bme280
-from config import WATER_DETECTION_PIN
+import psutil, pigpio, smbus2, bme280, math
+from mpu6050 import mpu6050
+from config import WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, GYRO_ADDRESS
 from Utils.common import log
 
 pi = pigpio.pi()
 
+# Initialize water detection pin
 if pi.connected:
     pi.set_mode(WATER_DETECTION_PIN, pigpio.INPUT)
     pi.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
 
-I2C_PORT = 1
-BME280_ADDRESS = 0x76
+# Try to start BME280 sensor
 try:
     bus = smbus2.SMBus(I2C_PORT)
     bme_calibration = bme280.load_calibration_params(bus, BME280_ADDRESS)
@@ -17,6 +18,14 @@ try:
 except Exception as e:
     log(f"BME280 Start Error: {e}")
     bme_connected = False
+
+# Try to start Gyroscope
+try:
+    imu = mpu6050(GYRO_ADDRESS) 
+    imu_connected = True
+except Exception as e:
+    log(f"Gyro Start Error: {e}")
+    imu_connected = False
 
 def get_system_telemetry(engine_manager):
     """ Gathers internal Drone telemetry and returns a JSON-ready dictionary """
@@ -45,8 +54,20 @@ def get_system_telemetry(engine_manager):
             bme_data = bme280.sample(bus, BME280_ADDRESS, bme_calibration)
             hull_temp = bme_data.temperature
             hull_hum = bme_data.humidity
-        except Exception as e:
-            log(f"BME280 Read Error: {e}")
+        except Exception:
+            pass
+
+    pitch = 0.0
+    roll = 0.0
+    if imu_connected:
+        try:
+            accel = imu.get_accel_data()
+            x, y, z = accel['x'], accel['y'], accel['z']
+            
+            # Convert raw G-forces into degrees of tilt
+            pitch = math.degrees(math.atan2(y, math.sqrt(x*x + z*z)))
+            roll = math.degrees(math.atan2(-x, z))
+        except Exception:
             pass
 
     return {
@@ -59,5 +80,7 @@ def get_system_telemetry(engine_manager):
         "front_power": engine_data.get("front_power_pct", 0),
         "rear_power": engine_data.get("rear_power_pct", 0),
         "hull_temp": round(hull_temp, 1),
-        "hull_hum": round(hull_hum, 1)
+        "hull_hum": round(hull_hum, 1),
+        "pitch": round(pitch, 1),
+        "roll": round(roll, 1)
     }
