@@ -10,21 +10,23 @@ if pi.connected:
     pi.set_mode(WATER_DETECTION_PIN, pigpio.INPUT)
     pi.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
 
-# Try to start BME280 sensor
+# Start BME280 sensor
 try:
     bus = smbus2.SMBus(I2C_PORT)
     bme_calibration = bme280.load_calibration_params(bus, BME280_ADDRESS)
     bme_connected = True
+    log("BME280 Sensor Connected successfully!")
 except Exception as e:
-    log(f"BME280 Start Error: {e}")
+    log(f"BME280 Init Error: {e}")
     bme_connected = False
 
-# Try to start Gyroscope
+# Start Gyroscope GY-6500
 try:
     imu = mpu6050(GYRO_ADDRESS) 
     imu_connected = True
+    log("Gyro GY-6500 Sensor Connected successfully!")
 except Exception as e:
-    log(f"Gyro Start Error: {e}")
+    log(f"Gyro GY-6500 Init Error: {e}")
     imu_connected = False
 
 def get_system_telemetry(engine_manager):
@@ -69,7 +71,7 @@ def get_system_telemetry(engine_manager):
             pitch = math.degrees(math.atan2(y, math.sqrt(x*x + z*z)))
             roll = math.degrees(math.atan2(-x, z))
         except Exception as e:
-            print(f"Gyro Read Error: {e}")
+            print(f"Gyro GY-6500 Read Error: {e}")
             pass
 
     return {
