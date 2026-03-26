@@ -2,6 +2,8 @@
 UDP_PORT = 37020
 UDP_VIDEO_PORT = 8486
 
+MAGIC_BYTE = 0xAA
+
 """ Engine control port """
 CONTROL_TCP_PORT = 8600
 
