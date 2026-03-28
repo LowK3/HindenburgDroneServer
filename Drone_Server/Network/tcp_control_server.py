@@ -10,6 +10,7 @@ class ControlServer:
         self.sock = None
         self.is_connected = False
         self.running = False
+        self.MAX_BUFFER = 4096
 
     def start(self):
         self.running = True
@@ -40,7 +41,12 @@ class ControlServer:
                 data = conn.recv(1024)
                 if not data:
                     break
-                buffer += data.decode()
+                buffer += data.decode('utf-8', errors='ignore')
+
+                if len(buffer) > self.MAX_BUFFER:
+                    log("WARNING! TCP buffer overflow. Dropping corrupted data.")
+                    buffer = ""
+                    continue
                 
                 # Extract and execute all complete commands in the buffer
                 while "\n" in buffer:
