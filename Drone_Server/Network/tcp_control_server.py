@@ -9,8 +9,10 @@ class ControlServer:
         self.engine = engine_manager
         self.sock = None
         self.is_connected = False
+        self.running = False
 
     def start(self):
+        self.running = True
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(("", CONTROL_TCP_PORT))
@@ -19,8 +21,7 @@ class ControlServer:
 
     def accept_client(self, shutdown_flag):
         """ Blocking accept loop for incoming command connections. """
-
-        while not shutdown_flag():
+        while self.running:
             try:
                 conn, addr = self.sock.accept()
                 conn.settimeout(TCP_SEND_TIMEOUT)
@@ -28,12 +29,14 @@ class ControlServer:
                 self.handle_client(conn, addr, shutdown_flag)
             except socket.timeout:
                 continue
+            except OSError:
+                break
 
     def handle_client(self, conn, addr, shutdown_flag):
         buffer = ""
         self.is_connected = True
         try:
-            while not shutdown_flag():
+            while self.running:
                 data = conn.recv(1024)
                 if not data:
                     break
@@ -56,16 +59,21 @@ class ControlServer:
         except socket.timeout:
             log("Client heartbeat lost! Stopping drone safely.")
         except ConnectionResetError:
-            log("Client abruptly disconnected. Stopping drone safely.")
+            log("Client abruptly disconnected! Stopping drone safely.")
         except Exception as e:
             log(f"Control socket error: {e}\n{traceback.format_exc()}")
         finally:
             self.is_connected = False
             conn.close()
-            self.engine.execute({"cmd": "STOP"})
+            if self.running:
+                self.engine.execute({"cmd": "STOP"})
             log(f"Control client disconnected: {addr}")
 
     def stop(self):
+        self.running = False
         if self.sock:
-            self.sock.close()
-            log("Control TCP socket closed.")
+            try:
+                self.sock.close()
+                log("Control TCP socket closed.")
+            except Exception:
+                pass

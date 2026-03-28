@@ -48,7 +48,6 @@ class ServerApp:
 
         control_thread = threading.Thread(
             target=control_server.accept_client,
-            args=(self.shutdown_flag,),
             daemon=True
         )
         control_thread.start()

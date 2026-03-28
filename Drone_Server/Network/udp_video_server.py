@@ -14,22 +14,22 @@ class VideoServer:
     def start(self):
         log("UDP Video server initialized.")
 
-    def start_stream(self, client_ip, shutdown_flag):
+    def start_stream(self, client_ip):
         if self.streaming:
             self.stop_stream()
         
         self.streaming = True
         self.stream_thread = threading.Thread(
             target=self.stream_to_client,
-            args=(client_ip, shutdown_flag),
+            args=(client_ip),
             daemon=True
         )
         self.stream_thread.start()
 
-    def stream_to_client(self, client_ip, shutdown_flag):
+    def stream_to_client(self, client_ip):
         log(f"Starting UDP stream to {client_ip}:{UDP_VIDEO_PORT}")
         try:
-            while self.streaming and not shutdown_flag():
+            while self.streaming:
                 frame = self.camera.capture_frame()
                 if frame is None:
                     time.sleep(0.01)
@@ -38,7 +38,7 @@ class VideoServer:
                 try:
                     data = simplejpeg.encode_jpeg(frame, quality=JPEG_QUALITY, colorspace='RGB')
                 except Exception as e:
-                    log(f"Encode failed: {e}\n{traceback.format_exc()}")
+                    log(f"Encode failed: {e}\n")
                     continue
 
                 length = len(data)
