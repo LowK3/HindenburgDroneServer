@@ -34,34 +34,38 @@ class ControlServer:
                 break
 
     def handle_client(self, conn, addr):
-        buffer = ""
+        buffer = b""
         self.is_connected = True
         try:
             while self.running:
                 data = conn.recv(1024)
                 if not data:
                     break
-                buffer += data.decode('utf-8', errors='ignore')
+                buffer += data
 
                 if len(buffer) > self.MAX_BUFFER:
                     log("WARNING! TCP buffer overflow. Dropping corrupted data.")
-                    buffer = ""
+                    buffer = b""
                     continue
                 
                 # Extract and execute all complete commands in the buffer
-                while "\n" in buffer:
-                    cmd_str, buffer = buffer.split("\n", 1)
-                    cmd_str = cmd_str.strip()
-                    if cmd_str:
-                        try:
-                            cmd = json.loads(cmd_str)
-                            self.engine.execute(cmd)
+                while b"\n" in buffer:
+                    cmd_bytes, buffer = buffer.split(b"\n", 1)
+                    try:
+                        cmd_str = cmd_bytes.decode('utf-8').strip()
+                        if not cmd_str:
+                            continue
+                        
+                        cmd = json.loads(cmd_str)
+                        self.engine.execute(cmd)
 
-                            telemetry = get_system_telemetry(self.engine)
-                            reply_str = json.dumps(telemetry) + "\n"
-                            conn.sendall(reply_str.encode())
-                        except json.JSONDecodeError:
-                            log(f"Ignored malformed JSON command: {cmd_str}")
+                        telemetry = get_system_telemetry(self.engine)
+                        reply_bytes = (json.dumps(telemetry) + "\n").encode('utf-8')
+                        conn.sendall(reply_bytes)
+                    except UnicodeDecodeError:
+                        log("Ignored command with invalid UTF-8 sequence.")
+                    except json.JSONDecodeError:
+                        log(f"Ignored malformed JSON command: {cmd_str}")
         except socket.timeout:
             log("Client heartbeat lost! Stopping drone safely.")
         except ConnectionResetError:
