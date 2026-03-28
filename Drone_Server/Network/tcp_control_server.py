@@ -19,20 +19,20 @@ class ControlServer:
         self.sock.listen(1)
         log(f"Control server listening on TCP {CONTROL_TCP_PORT}.")
 
-    def accept_client(self, shutdown_flag):
+    def accept_client(self):
         """ Blocking accept loop for incoming command connections. """
         while self.running:
             try:
                 conn, addr = self.sock.accept()
                 conn.settimeout(TCP_SEND_TIMEOUT)
                 log(f"Control client connected: {addr}")
-                self.handle_client(conn, addr, shutdown_flag)
+                self.handle_client(conn, addr)
             except socket.timeout:
                 continue
             except OSError:
                 break
 
-    def handle_client(self, conn, addr, shutdown_flag):
+    def handle_client(self, conn, addr):
         buffer = ""
         self.is_connected = True
         try:
