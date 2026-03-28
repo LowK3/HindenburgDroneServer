@@ -72,7 +72,7 @@ class ServerApp:
                     continue
 
                 # Stream via UDP. (Only executes if the handshake above succeeded!)
-                video_server.start_stream(client_ip, self.shutdown_flag)
+                video_server.start_stream(client_ip)
 
                 while control_server.is_connected and not self.shutdown_flag():
                     time.sleep(0.5)
