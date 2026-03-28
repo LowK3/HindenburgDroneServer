@@ -10,7 +10,7 @@ class ControlServer:
         self.sock = None
         self.is_connected = False
         self.running = False
-        self.MAX_BUFFER = 4096
+        self.max_buffer = 4096
 
     def start(self):
         self.running = True
@@ -43,7 +43,7 @@ class ControlServer:
                     break
                 buffer += data
 
-                if len(buffer) > self.MAX_BUFFER:
+                if len(buffer) > self.max_buffer:
                     log("WARNING! TCP buffer overflow. Dropping corrupted data.")
                     buffer = b""
                     continue
