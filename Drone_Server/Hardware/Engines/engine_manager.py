@@ -19,6 +19,7 @@ class EngineManager:
             return
             
         self.last_cmd = cmd
+        print(f"{self.last_cmd}")
 
         # Movement
         if cmd == "W": self.rear.forward()
