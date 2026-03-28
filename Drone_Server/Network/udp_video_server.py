@@ -21,7 +21,7 @@ class VideoServer:
         self.streaming = True
         self.stream_thread = threading.Thread(
             target=self.stream_to_client,
-            args=(client_ip),
+            args=(client_ip,),
             daemon=True
         )
         self.stream_thread.start()
