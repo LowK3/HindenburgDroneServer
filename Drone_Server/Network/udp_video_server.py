@@ -15,8 +15,12 @@ class VideoServer:
         log("UDP Video server initialized.")
 
     def start_stream(self, client_ip):
-        if self.streaming:
+        if self.streaming or (self.stream_thread and self.stream_thread.is_alive()):
             self.stop_stream()
+
+            if self.stream_thread and self.stream_thread.is_alive():
+                log("[CRITICAL] Previous video thread is deadlocked. Cannot start new stream.")
+                return
         
         self.streaming = True
         self.stream_thread = threading.Thread(
@@ -62,6 +66,8 @@ class VideoServer:
         self.streaming = False
         if self.stream_thread and self.stream_thread.is_alive():
             self.stream_thread.join(timeout=1.0)
+            if self.stream_thread.is_alive():
+                log("ERROR: Video stream thread refused to terminate. Camera hardware may be locked.")
 
     def stop(self):
         self.stop_stream()
