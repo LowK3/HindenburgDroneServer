@@ -33,17 +33,19 @@ class ServerApp:
                 time.sleep(5)
                 
         if not camera_running:
+            video_server = None
             log("[CRITICAL] Camera failed to initialize. Drone will run blind!")
+        else:
+            video_server = VideoServer(cam)
+            video_server.start()
 
         discovery = DiscoveryServer()
         discovery.start()
 
-        video_server = VideoServer(cam)
-        video_server.start()
         log("Server ready. Press 'Ctrl+C' to stop.")
 
         engine_mgr = EngineManager()
-        control_server = ControlServer(engine_mgr)
+        control_server = ControlServer(engine_mgr, camera_running)
         control_server.start()
 
         control_thread = threading.Thread(
@@ -72,12 +74,14 @@ class ServerApp:
                     continue
 
                 # Stream via UDP. (Only executes if the handshake above succeeded!)
-                video_server.start_stream(client_ip)
+                if video_server:
+                    video_server.start_stream(client_ip)
 
                 while control_server.is_connected and not self.shutdown_flag():
                     time.sleep(0.5)
 
-                video_server.stop_stream()
+                if video_server:
+                    video_server.stop_stream()
                 log("Client disconnected. Returning to discovery...")
                 time.sleep(1.0)
 
@@ -92,7 +96,8 @@ class ServerApp:
             control_server.stop()
             engine_mgr.stop()
             log("Engine shutdown complete")
-            video_server.stop()
+            if video_server:
+                video_server.stop()
             cam.stop()
             discovery.stop()
             log("Server shutdown complete")

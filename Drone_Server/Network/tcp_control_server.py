@@ -5,8 +5,9 @@ from Utils.common import log
 
 class ControlServer:
     """ Dedicated TCP server for receiving movement commands. """
-    def __init__(self, engine_manager):
+    def __init__(self, engine_manager, camera_status: bool):
         self.engine = engine_manager
+        self.camera_status = camera_status
         self.sock = None
         self.is_connected = False
         self.running = False
@@ -61,6 +62,7 @@ class ControlServer:
                         self.engine.execute(cmd)
 
                         telemetry = get_system_telemetry(self.engine)
+                        telemetry["camera_status"] = "OK" if self.camera_status else "FAIL"
                         reply_bytes = (json.dumps(telemetry) + "\n").encode('utf-8')
                         conn.sendall(reply_bytes)
                     except UnicodeDecodeError:
