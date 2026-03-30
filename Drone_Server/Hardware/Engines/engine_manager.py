@@ -10,15 +10,9 @@ class EngineManager:
         self.pi = pigpio.pi()
         self.rear = RearEngines(self.pi, REAR_LEFT_PIN, REAR_RIGHT_PIN)
         self.front = FrontEngines(self.pi, FRONT_LEFT_PIN, FRONT_RIGHT_PIN)
-        self.last_cmd = None
 
     def execute(self, cmd: dict):
         cmd = cmd.get("cmd", "").upper()
-
-        if cmd == self.last_cmd:
-            return
-            
-        self.last_cmd = cmd
 
         # Movement
         if cmd == "W": self.rear.forward()
