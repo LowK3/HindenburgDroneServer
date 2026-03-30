@@ -60,7 +60,10 @@ class ControlServer:
                             continue
                         
                         cmd = json.loads(cmd_str)
-                        self.engine.execute(cmd)
+                        cmd_type = cmd.get("cmd", "").upper()
+
+                        if cmd_type != "PING":
+                            self.engine.execute(cmd)
 
                         telemetry = get_system_telemetry(self.engine)
                         telemetry["camera_status"] = self.camera_status
