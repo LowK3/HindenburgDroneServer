@@ -63,6 +63,7 @@ class ControlServer:
 
                         telemetry = get_system_telemetry(self.engine)
                         telemetry["camera_status"] = self.camera_status
+                        telemetry["leak_detected"] = True
                         reply_bytes = (json.dumps(telemetry) + "\n").encode('utf-8')
                         conn.sendall(reply_bytes)
                     except UnicodeDecodeError:
