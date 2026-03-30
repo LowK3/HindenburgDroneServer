@@ -62,7 +62,7 @@ class ControlServer:
                         self.engine.execute(cmd)
 
                         telemetry = get_system_telemetry(self.engine)
-                        telemetry["camera_status"] = "OK" if self.camera_status else "FAIL"
+                        telemetry["camera_status"] = self.camera_status
                         reply_bytes = (json.dumps(telemetry) + "\n").encode('utf-8')
                         conn.sendall(reply_bytes)
                     except UnicodeDecodeError:
