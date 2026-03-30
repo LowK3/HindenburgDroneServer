@@ -36,23 +36,24 @@ class ControlServer:
                 break
 
     def handle_client(self, conn, addr):
-        buffer = b""
+        buffer = bytearray()
         self.is_connected = True
         try:
             while self.running:
                 data = conn.recv(1024)
                 if not data:
                     break
-                buffer += data
+                buffer.extend(data)
 
                 if len(buffer) > self.max_buffer:
                     log("WARNING! TCP buffer overflow. Dropping corrupted data.")
-                    buffer = b""
+                    buffer.clear()
                     continue
                 
                 # Extract and execute all complete commands in the buffer
-                while b"\n" in buffer:
-                    cmd_bytes, buffer = buffer.split(b"\n", 1)
+                while (newline_idx := buffer.find(b"\n")) != -1:
+                    cmd_bytes = buffer[:newline_idx]
+                    del buffer[:newline_idx + 1]
                     try:
                         cmd_str = cmd_bytes.decode('utf-8').strip()
                         if not cmd_str:
@@ -63,7 +64,6 @@ class ControlServer:
 
                         telemetry = get_system_telemetry(self.engine)
                         telemetry["camera_status"] = self.camera_status
-                        telemetry["leak_detected"] = True
                         reply_bytes = (json.dumps(telemetry) + "\n").encode('utf-8')
                         conn.sendall(reply_bytes)
                     except UnicodeDecodeError:
