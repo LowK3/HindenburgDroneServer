@@ -1,6 +1,5 @@
 import socket, struct, time, traceback, json, threading
 from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT
-from Utils.rasp_telemetry import get_system_telemetry
 from Utils.common import log
 
 class ControlServer:
