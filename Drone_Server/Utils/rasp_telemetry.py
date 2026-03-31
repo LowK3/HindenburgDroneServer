@@ -1,36 +1,60 @@
-import psutil, pigpio, smbus2, bme280, math
+import psutil, pigpio, smbus2, bme280, math, time, traceback
 from mpu6050 import mpu6050
-from config import WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, GYRO_ADDRESS
+from config import WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, GYRO_ADDRESS, RECONNECT_COOLDOWN
 from Utils.common import log
 
+last_reconnect_time = 0
+
 pi = pigpio.pi()
+water_connected = False
+bme_connected = False
+imu_connected = False
 
-# Initialize water detection pin
-if pi.connected:
-    pi.set_mode(WATER_DETECTION_PIN, pigpio.INPUT)
-    pi.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
+bus = None
+bme_calibration = None
+imu = None
 
-# Start BME280 sensor
-try:
-    bus = smbus2.SMBus(I2C_PORT)
-    bme_calibration = bme280.load_calibration_params(bus, BME280_ADDRESS)
-    bme_connected = True
-    log("BME280 Sensor Connected successfully!")
-except Exception as e:
-    log(f"BME280 Init Error: {e}")
-    bme_connected = False
+def try_init_hardware():
+    """ Attempts to connect to all offline sensors. """
+    global water_connected, bme_connected, imu_connected, bus, bme_calibration, imu
 
-# Start Gyroscope GY-6500
-try:
-    imu = mpu6050(GYRO_ADDRESS) 
-    imu_connected = True
-    log("Gyro GY-6500 Sensor Connected successfully!")
-except Exception as e:
-    log(f"Gyro GY-6500 Init Error: {e}")
-    imu_connected = False
+    # Start water detection sensor
+    if not water_connected and pi.connected:
+        try:
+            pi.set_mode(WATER_DETECTION_PIN, pigpio.INPUT)
+            pi.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
+            water_connected = True
+        except Exception as e:
+            log(f"Water Sensor Init Error: {e}")
+
+    # Start BME280 sensor
+    if not bme_connected:
+        try:
+            bus = smbus2.SMBus(1)
+            bme_calibration = bme280.load_calibration_params(bus, 0x76)
+            bme_connected = True
+        except Exception:
+            pass
+
+    # Start Gyroscope GY-6500
+    if not imu_connected:
+        try:
+            imu = mpu6050(0x68)
+            imu_connected = True
+        except Exception:
+            pass
+
+try_init_hardware()
 
 def get_system_telemetry(engine_manager):
     """ Gathers internal Drone telemetry and returns a JSON-ready dictionary """
+    global water_connected, bme_connected, imu_connected, last_reconnect_time
+
+    if not (water_connected and bme_connected and imu_connected):
+        if time.time() - last_reconnect_time > RECONNECT_COOLDOWN:
+            try_init_hardware()
+            last_reconnect_time = time.time()
+
     try:
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
             temp_c = int(f.read()) / 1000.0
@@ -44,10 +68,11 @@ def get_system_telemetry(engine_manager):
         low_voltage = False
 
     leak_detected = False
-    if pi.connected:
-        leak_detected = (pi.read(WATER_DETECTION_PIN) == 0)
-
-    engine_data = engine_manager.get_telemetry_data() if engine_manager else {}
+    if water_connected:
+        try:
+            leak_detected = (pi.read(WATER_DETECTION_PIN) == 0)
+        except Exception:
+            water_connected = False
 
     hull_temp = 0.0
     hull_hum = 0.0
@@ -57,8 +82,7 @@ def get_system_telemetry(engine_manager):
             hull_temp = bme_data.temperature
             hull_hum = bme_data.humidity
         except Exception as e:
-            print(f"BME280 Read Error: {e}")
-            pass
+            bme_connected = False
 
     pitch = 0.0
     roll = 0.0
@@ -66,13 +90,13 @@ def get_system_telemetry(engine_manager):
         try:
             accel = imu.get_accel_data()
             x, y, z = accel['x'], accel['y'], accel['z']
-            
             # Convert raw G-forces into degrees of tilt
             pitch = math.degrees(math.atan2(y, math.sqrt(x*x + z*z)))
             roll = math.degrees(math.atan2(-x, z))
-        except Exception as e:
-            print(f"Gyro GY-6500 Read Error: {e}")
-            pass
+        except Exception:
+            imu_connected = False
+
+    engine_data = engine_manager.get_telemetry_data() if engine_manager else {}
 
     return {
         "type": "TELEMETRY",
