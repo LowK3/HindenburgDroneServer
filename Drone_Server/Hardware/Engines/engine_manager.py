@@ -11,40 +11,37 @@ class EngineManager:
         self.rear = RearEngines(self.pi, REAR_LEFT_PIN, REAR_RIGHT_PIN)
         self.front = FrontEngines(self.pi, FRONT_LEFT_PIN, FRONT_RIGHT_PIN)
 
-    def execute(self, cmd: dict):
-        cmd = cmd.get("cmd", "").upper()
+        self._command_map = {
+            "W": self.rear.forward,
+            "S": self.rear.backward,
+            "A": self.rear.turn_left,
+            "D": self.rear.turn_right,
+            "UP": self.front.tilt_up,
+            "DOWN": self.front.tilt_down,
+            "STOP": self._stop_all_engines,
+            "REAR+": self.rear.increase_power,
+            "REAR-": self.rear.decrease_power,
+            "FRONT+": self.front.increase_power,
+            "FRONT-": self.front.decrease_power
+        }
 
-        # Movement
-        if cmd == "W": self.rear.forward()
-        elif cmd == "S": self.rear.backward()
-        elif cmd == "A": self.rear.turn_left()
-        elif cmd == "D": self.rear.turn_right()
+    def _stop_all_engines(self):
+        self.rear.stop()
+        self.front.stop()
 
-        # Tilt
-        elif cmd == "UP": self.front.tilt_up()
-        elif cmd == "DOWN": self.front.tilt_down()
-
-        # Stop
-        elif cmd == "STOP": 
-            self.rear.stop()
-            self.front.stop()
-
-        # Power adjustments
-        elif cmd == "REAR+": self.rear.increase_power()
-        elif cmd == "REAR-": self.rear.decrease_power()
-        elif cmd == "FRONT+": self.front.increase_power()
-        elif cmd == "FRONT-": self.front.decrease_power()
-
-        else:
-            log(f"Unknown command: {cmd}")
-            return
+    def execute(self, payload: dict):
+        action = payload.get("cmd", "").upper()
         
-        log(f"Executed engine command: {cmd}")
+        command_func = self._command_map.get(action)
+        if command_func:
+            command_func()
+            log(f"Executed engine command: {action}")
+        else:
+            log(f"Unknown command received: {action}")
 
     def stop(self):
         log("Stopping all engines")
-        self.rear.stop()
-        self.front.stop()
+        self._stop_all_engines()
         self.pi.stop()
 
     def get_telemetry_data(self):

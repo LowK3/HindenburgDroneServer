@@ -20,7 +20,6 @@ class ControlServer:
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(("", CONTROL_TCP_PORT))
         self.sock.listen(1)
-        self.sock.settimeout(1.0)
         log(f"Control server listening on TCP {CONTROL_TCP_PORT}.")
 
     def accept_client(self):

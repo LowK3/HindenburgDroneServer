@@ -1,4 +1,4 @@
-import threading, sys, time, traceback
+import threading, time, traceback
 from Hardware.camera_manager import Camera
 from Network.discovery_server import DiscoveryServer
 from Network.udp_video_server import VideoServer
@@ -80,7 +80,7 @@ class ServerApp:
                 if video_server:
                     video_server.start_stream(client_ip)
 
-                while control_server.is_connected and not self.shutdown_flag():
+                while control_server.  and not self.shutdown_flag():
                     time.sleep(0.5)
 
                 if video_server:
