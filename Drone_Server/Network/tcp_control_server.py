@@ -1,4 +1,7 @@
-import socket, struct, time, traceback, json, threading
+import socket 
+import traceback
+import json
+import threading
 from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT
 from Utils.common import log
 

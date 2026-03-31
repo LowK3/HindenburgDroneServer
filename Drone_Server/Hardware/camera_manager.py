@@ -1,4 +1,6 @@
-import cv2, traceback, threading
+import cv2
+import traceback
+import threading
 from picamera2 import Picamera2
 from config import NATIVE_RESOLUTION, CAM_RESOLUTION, CAM_FPS
 from Utils.common import log

@@ -1,4 +1,10 @@
-import psutil, pigpio, smbus2, bme280, math, time, threading
+import psutil
+import pigpio
+import smbus2
+import bme280
+import math
+import time
+import threading
 from mpu6050 import mpu6050
 from config import WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, GYRO_ADDRESS, SENSOR_RECONNECT_COOLDOWN
 from Utils.common import log

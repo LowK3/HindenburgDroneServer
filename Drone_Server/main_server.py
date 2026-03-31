@@ -1,4 +1,7 @@
-import threading, time, traceback
+import threading
+import time
+import traceback
+import pigpio
 from Hardware.camera_manager import Camera
 from Network.discovery_server import DiscoveryServer
 from Network.udp_video_server import VideoServer
@@ -29,7 +32,7 @@ class ServerApp:
                 cam.start()
                 camera_running = True
                 break
-            except Exception as e:
+            except Exception:
                 log(f"Camera init failed (Attempt {attempt+1}/3). Retrying in 5s...")
                 time.sleep(5)
                 
@@ -80,7 +83,7 @@ class ServerApp:
                 if video_server:
                     video_server.start_stream(client_ip)
 
-                while control_server.  and not self.shutdown_flag():
+                while control_server.is_connected and not self.shutdown_flag():
                     time.sleep(0.5)
 
                 if video_server:

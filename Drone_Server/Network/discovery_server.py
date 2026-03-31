@@ -1,4 +1,5 @@
-import socket, traceback
+import socket
+import traceback
 from config import UDP_PORT, UDP_VIDEO_PORT, UDP_TIMEOUT
 from Utils.common import log
 
