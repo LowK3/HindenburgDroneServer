@@ -1,6 +1,6 @@
 import psutil, pigpio, smbus2, bme280, math, time, threading
 from mpu6050 import mpu6050
-from config import WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, GYRO_ADDRESS, RECONNECT_COOLDOWN
+from config import WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, GYRO_ADDRESS, SENSOR_RECONNECT_COOLDOWN
 from Utils.common import log
 
 class TelemetryGatherer:
@@ -77,7 +77,7 @@ class TelemetryGatherer:
     def _poll_loop(self):
         while self._running:
             if not (self.water_connected and self.bme_connected and self.imu_connected):
-                if time.time() - self.last_reconnect_time > RECONNECT_COOLDOWN:
+                if time.time() - self.last_reconnect_time > SENSOR_RECONNECT_COOLDOWN:
                     self.init_hardware()
                     self.last_reconnect_time = time.time()
 
