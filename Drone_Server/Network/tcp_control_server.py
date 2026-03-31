@@ -5,8 +5,9 @@ from Utils.common import log
 
 class ControlServer:
     """ Dedicated TCP server for receiving movement commands. """
-    def __init__(self, engine_manager, camera_status: bool):
+    def __init__(self, engine_manager, telemetry_gatherer, camera_status: bool):
         self.engine = engine_manager
+        self.telemetry = telemetry_gatherer
         self.camera_status = camera_status
         self.connected_event = threading.Event()
         self.sock = None
@@ -67,9 +68,10 @@ class ControlServer:
                         if cmd_type != "PING":
                             self.engine.execute(cmd)
 
-                        telemetry = get_system_telemetry(self.engine)
-                        telemetry["camera_status"] = self.camera_status
-                        reply_bytes = (json.dumps(telemetry) + "\n").encode('utf-8')
+                        telemetry_data = self.telemetry.get_state()
+                        telemetry_data["camera_status"] = self.camera_status
+
+                        reply_bytes = (json.dumps(telemetry_data) + "\n").encode('utf-8')
                         conn.sendall(reply_bytes)
                     except UnicodeDecodeError:
                         log("Ignored command with invalid UTF-8 sequence.")

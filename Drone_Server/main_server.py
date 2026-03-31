@@ -4,6 +4,7 @@ from Network.discovery_server import DiscoveryServer
 from Network.udp_video_server import VideoServer
 from Network.tcp_control_server import ControlServer
 from Hardware.Engines.engine_manager import EngineManager
+from Hardware.telemetry import TelemetryGatherer
 from Utils.common import log
 from config import CONNECTION_TIMEOUT
 
@@ -45,7 +46,11 @@ class ServerApp:
         log("Server ready. Press 'Ctrl+C' to stop.")
 
         engine_mgr = EngineManager()
-        control_server = ControlServer(engine_mgr, camera_running)
+
+        telemetry_gatherer = TelemetryGatherer(engine_mgr)
+        telemetry_gatherer.start()
+
+        control_server = ControlServer(engine_mgr, telemetry_gatherer, camera_running)
         control_server.start()
 
         control_thread = threading.Thread(
@@ -92,6 +97,7 @@ class ServerApp:
         finally:
             log("Pi Server shutting down...")
             control_server.stop()
+            telemetry_gatherer.stop()
             engine_mgr.stop()
             log("Engine shutdown complete")
             if video_server:
