@@ -59,7 +59,7 @@ class TelemetryGatherer:
             try:
                 self.imu = mpu6050(GYRO_ADDRESS)
                 self.imu_connected = True
-            except Exception:
+            except Exception as e:
                 log(f"Gyro Init Error: {e}")
 
     def start(self):
