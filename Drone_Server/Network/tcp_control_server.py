@@ -1,4 +1,4 @@
-import socket, struct, time, traceback, json
+import socket, struct, time, traceback, json, threading
 from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT
 from Utils.rasp_telemetry import get_system_telemetry
 from Utils.common import log
@@ -8,6 +8,7 @@ class ControlServer:
     def __init__(self, engine_manager, camera_status: bool):
         self.engine = engine_manager
         self.camera_status = camera_status
+        self.connected_event = threading.Event()
         self.sock = None
         self.is_connected = False
         self.running = False
@@ -38,6 +39,7 @@ class ControlServer:
     def handle_client(self, conn, addr):
         buffer = bytearray()
         self.is_connected = True
+        self.connected_event.set()
         try:
             while self.running:
                 data = conn.recv(1024)
@@ -81,6 +83,7 @@ class ControlServer:
             log(f"Control socket error: {e}\n{traceback.format_exc()}")
         finally:
             self.is_connected = False
+            self.connected_event.clear()
             conn.close()
             if self.running:
                 self.engine.execute({"cmd": "STOP"})

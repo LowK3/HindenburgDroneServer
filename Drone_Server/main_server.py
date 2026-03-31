@@ -65,11 +65,9 @@ class ServerApp:
                 client_ip = addr[0]
                 log(f"Discovered client at {client_ip}. Waiting for TCP handshake...")
 
-                handshake_timeout = time.time() + CONNECTION_TIMEOUT
-                while time.time() < handshake_timeout and not control_server.is_connected:
-                    time.sleep(0.1)
+                connected = control_server.connected_event.wait(timeout=CONNECTION_TIMEOUT)
 
-                if not control_server.is_connected:
+                if not connected:
                     log("Client missed the UDP reply. Returning to discovery immediately...")
                     continue
 
