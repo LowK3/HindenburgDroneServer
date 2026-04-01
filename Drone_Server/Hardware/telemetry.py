@@ -6,7 +6,10 @@ import math
 import time
 import threading
 from mpu6050 import mpu6050
-from config import WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, IMU_ADDRESS, SENSOR_RECONNECT_COOLDOWN
+from config import (
+    WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, IMU_ADDRESS, SENSOR_RECONNECT_COOLDOWN,
+    POLLING_RATE
+    )
 from Utils.common import log
 
 class TelemetryGatherer:
@@ -94,7 +97,7 @@ class TelemetryGatherer:
             with self._lock:
                 self._cached_state = state
             
-            time.sleep(0.1) # 10Hz polling rate
+            time.sleep(POLLING_RATE)
 
     def _poll_system_stats(self, state: dict):
         try:

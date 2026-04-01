@@ -1,5 +1,5 @@
 from .thrusters import Thruster, NEUTRAL
-from config import DEFAULT_POWER
+from config import DEFAULT_POWER, POWER_INCREMENT, POWER_MIN, POWER_MAX
 
 class PairedThrusters:
     """ Base class for managing a pair of thrusters. """
@@ -13,10 +13,10 @@ class PairedThrusters:
         self.right.stop()
 
     def increase_power(self):
-        self.power = min(self.power + 2, 25)
+        self.power = min(self.power + POWER_INCREMENT, POWER_MAX)
 
     def decrease_power(self):
-        self.power = max(self.power - 2, 5)
+        self.power = max(self.power - POWER_INCREMENT, POWER_MIN)
 
     def get_power_percentage(self):
-        return int(((self.power - 5) / (25 - 5)) * 100)
+        return int(((self.power - POWER_MIN) / (POWER_MAX - POWER_MIN)) * 100)

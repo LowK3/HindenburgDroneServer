@@ -5,7 +5,7 @@ import time
 import threading
 import traceback
 import simplejpeg
-from config import UDP_VIDEO_PORT, JPEG_QUALITY, CONNECTION_TIMEOUT, MAGIC_BYTE
+from config import UDP_VIDEO_PORT, JPEG_QUALITY, CONNECTION_TIMEOUT, MAGIC_BYTE, CHUNK_BYTE_LIMIT
 from Utils.common import log
 
 class VideoServer:
@@ -13,7 +13,7 @@ class VideoServer:
         self.camera = camera
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.frame_id = 0
-        self.max_chunk_size = 1400 # Safe byte limit
+        self.max_chunk_size = CHUNK_BYTE_LIMIT
         self.streaming = False
         self.stream_thread = None
 

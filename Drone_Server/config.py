@@ -3,33 +3,52 @@ UDP_PORT = 37020
 UDP_VIDEO_PORT = 8486
 CONTROL_TCP_PORT = 8600
 
+# --- Discovery Protocol ---
+HANDSHAKE_EXPECTED = b"PC_CLIENT"
+HANDSHAKE_REPLY_PREFIX = "PI_SERVER"
+
 # --- Network settings ---
 NETWORK_INTERFACE = b"eth0\0"
 MAGIC_BYTE = 0xAA
+CHUNK_BYTE_LIMIT = 1400
+TCP_BUFFER_SIZE = 4096
+TCP_RECV_CHUNK = 1024
+DISCOVERY_RECV_CHUNK = 1024
 
 # --- Camera settings ---
 NATIVE_RESOLUTION = (1680, 1232)
 CAM_RESOLUTION = (840, 616)
 CAM_FPS = 40
 JPEG_QUALITY = 60
+CAMERA_INIT_RETRIES = 3
 
-# --- Connection timeouts ---
+# --- Timeouts, Timers and Rates ---
 UDP_TIMEOUT = 0.25
 TCP_SEND_TIMEOUT = 0.5
 CONNECTION_TIMEOUT = 1.0
+WATCHDOG_TIMEOUT = 500  # In ms
 SENSOR_RECONNECT_COOLDOWN = 10.0
+POLLING_RATE = 0.1
+CAMERA_RETRY_DELAY = 5.0
+DISCONNECT_COOLDOWN = 1.0
 
-# --- Logging settings ---
+# --- Logging ---
 LOG_PREFIX = "[SERVER]"
+LOG_DIR = "logs"
+LOG_MAX_BYTES = 5 * 1024 * 1024
+LOG_BACKUP_COUNT = 2
 
-# --- Motor control pins (ApisQueen U2 Mini) ---
+# --- Thruster control pins (ApisQueen U2 Mini) ---
 REAR_LEFT_PIN  = 13
 REAR_RIGHT_PIN = 21
 FRONT_LEFT_PIN = 5
 FRONT_RIGHT_PIN = 7
 
-# --- Default motor power ---
+# --- Thruster power bounds ---
 DEFAULT_POWER = 9
+POWER_INCREMENT = 2
+POWER_MIN = 5
+POWER_MAX = 25
 
 # --- Sensors ---
 WATER_DETECTION_PIN = 4
@@ -45,3 +64,4 @@ PWM_RANGE = 1000
 NEUTRAL = 75
 MAX_FORWARD = 100
 MAX_REVERSE = 60
+

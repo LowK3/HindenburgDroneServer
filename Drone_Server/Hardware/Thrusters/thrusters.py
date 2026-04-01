@@ -1,5 +1,8 @@
 import pigpio
-from config import PWM_FREQUENCY, PWM_RANGE, NEUTRAL, MAX_FORWARD, MAX_REVERSE
+from config import (
+    PWM_FREQUENCY, PWM_RANGE, NEUTRAL, MAX_FORWARD, MAX_REVERSE,
+    WATCHDOG_TIMEOUT
+)
 from Utils.common import log
 
 class Thruster:
@@ -12,7 +15,7 @@ class Thruster:
         self.pi.set_mode(self.pin, pigpio.OUTPUT)
         self.pi.set_PWM_frequency(self.pin, PWM_FREQUENCY)
         self.pi.set_PWM_range(self.pin, PWM_RANGE)
-        self.pi.set_watchdog(self.pin, 500)
+        self.pi.set_watchdog(self.pin, WATCHDOG_TIMEOUT)
         self.set_duty(NEUTRAL)
         log(f"[Thruster] Initialized thruster on GPIO {pin}")
 

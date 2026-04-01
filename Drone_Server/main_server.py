@@ -9,7 +9,7 @@ from Network.tcp_control_server import ControlServer
 from Hardware.Thrusters.thruster_manager import ThrusterManager
 from Hardware.telemetry import TelemetryGatherer
 from Utils.common import log, setup_logging
-from config import CONNECTION_TIMEOUT
+from config import CONNECTION_TIMEOUT, CAMERA_RETRY_DELAY, CAMERA_INIT_RETRIES, DISCONNECT_COOLDOWN
 
 class ServerApp:
     def __init__(self):
@@ -68,13 +68,13 @@ class ServerApp:
         log("Server ready. Press 'Ctrl+C' to stop.")
 
     def _initialize_camera(self):
-        for attempt in range(3): 
+        for attempt in range(CAMERA_INIT_RETRIES): 
             try:
                 self.cam.start()
                 return True
             except Exception:
-                log(f"Camera init failed (Attempt {attempt+1}/3). Retrying in 5s...")
-                time.sleep(5)
+                log(f"Camera init failed (Attempt {attempt+1}/{CAMERA_INIT_RETRIES}). Retrying in 5s...")
+                time.sleep(CAMERA_RETRY_DELAY)
         log("[CRITICAL] Camera failed to initialize. Drone will run blind!")
         return False
 
@@ -98,12 +98,12 @@ class ServerApp:
                 self.video_server.start_stream(client_ip)
 
             while self.control_server.is_connected and not self.shutdown_flag():
-                time.sleep(0.5)
+                self.control_server.disconnected_event.wait(timeout=0.5)
 
             if self.video_server:
                 self.video_server.stop_stream()
             log("Client disconnected. Returning to discovery...")
-            time.sleep(1.0)
+            time.sleep(DISCONNECT_COOLDOWN)
 
     def _stop(self):
         log("Pi Server shutting down...")

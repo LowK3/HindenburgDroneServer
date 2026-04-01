@@ -1,6 +1,9 @@
 import socket
 import traceback
-from config import UDP_PORT, UDP_VIDEO_PORT, UDP_TIMEOUT, NETWORK_INTERFACE
+from config import (
+    UDP_PORT, UDP_VIDEO_PORT, UDP_TIMEOUT, NETWORK_INTERFACE,
+    HANDSHAKE_EXPECTED, HANDSHAKE_REPLY_PREFIX, DISCOVERY_RECV_CHUNK
+)
 from Utils.common import log
 
 class DiscoveryServer:
@@ -27,7 +30,7 @@ class DiscoveryServer:
         Does NOT block indefinitely (uses UDP_TIMEOUT). 
         """
         try:
-            data, addr = self.sock.recvfrom(1024)
+            data, addr = self.sock.recvfrom(DISCOVERY_RECV_CHUNK)
         except socket.timeout:
             return None
         except Exception as e:
@@ -37,9 +40,9 @@ class DiscoveryServer:
         if not data:
             return None
 
-        if data == b"PC_CLIENT":
+        if data == HANDSHAKE_EXPECTED:
             log(f"Discovery request from {addr}, replying with TCP port {UDP_VIDEO_PORT}")
-            reply = f"PI_SERVER:{UDP_VIDEO_PORT}".encode()
+            reply = f"{HANDSHAKE_REPLY_PREFIX}:{UDP_VIDEO_PORT}".encode()
             try:
                 self.sock.sendto(reply, addr)
             except Exception as e:

@@ -2,7 +2,7 @@ import socket
 import traceback
 import json
 import threading
-from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT
+from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT, TCP_BUFFER_SIZE, TCP_RECV_CHUNK
 from Utils.common import log
 
 class ControlServer:
@@ -12,10 +12,11 @@ class ControlServer:
         self.telemetry = telemetry_gatherer
         self.camera_status = camera_status
         self.connected_event = threading.Event()
+        self.disconnected_event = threading.Event()
+        self.disconnected_event.set()
         self.sock = None
         self.is_connected = False
         self.running = False
-        self.max_buffer = 4096
 
     def start(self):
         self.running = True
@@ -42,14 +43,15 @@ class ControlServer:
         buffer = bytearray()
         self.is_connected = True
         self.connected_event.set()
+        self.disconnected_event.clear()
         try:
             while self.running:
-                data = conn.recv(1024)
+                data = conn.recv(TCP_RECV_CHUNK)
                 if not data:
                     break
                 buffer.extend(data)
 
-                if len(buffer) > self.max_buffer:
+                if len(buffer) > TCP_BUFFER_SIZE:
                     log("WARNING! TCP buffer overflow. Dropping corrupted data.")
                     buffer.clear()
                     continue
@@ -95,6 +97,7 @@ class ControlServer:
     def _cleanup_connection(self, conn: socket.socket, addr: tuple):
         self.is_connected = False
         self.connected_event.clear()
+        self.disconnected_event.set()
         conn.close()
         if self.running:
             self.thruster.execute({"cmd": "STOP"})
