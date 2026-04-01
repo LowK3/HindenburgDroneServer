@@ -1,11 +1,12 @@
 import psutil
 import smbus2
 import bme280
+import pigpio
 import math
 import time
 import threading
 from mpu6050 import mpu6050
-from config import WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, GYRO_ADDRESS, SENSOR_RECONNECT_COOLDOWN
+from config import WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, IMU_ADDRESS, SENSOR_RECONNECT_COOLDOWN
 from Utils.common import log
 
 class TelemetryGatherer:
@@ -42,7 +43,16 @@ class TelemetryGatherer:
             "roll": 0.0
         }
 
-    def init_hardware(self):
+    def start(self):
+        self._running = True
+        self._init_hardware()
+        threading.Thread(target=self._poll_loop, daemon=True).start()
+
+    def get_state(self):
+        with self._lock:
+            return self._cached_state.copy()
+
+    def _init_hardware(self):
         """ Attempts to connect to all offline sensors. """
         if not self.water_connected and self.gpio.connected:
             try:
@@ -62,22 +72,10 @@ class TelemetryGatherer:
 
         if not self.imu_connected:
             try:
-                self.imu = mpu6050(GYRO_ADDRESS)
+                self.imu = mpu6050(IMU_ADDRESS)
                 self.imu_connected = True
             except Exception as e:
                 log(f"Gyro Init Error: {e}")
-
-    def start(self):
-        self._running = True
-        self.init_hardware()
-        threading.Thread(target=self._poll_loop, daemon=True).start()
-
-    def stop(self):
-        self._running = False
-
-    def get_state(self):
-        with self._lock:
-            return self._cached_state.copy()
 
     def _poll_loop(self):
         while self._running:
@@ -87,53 +85,64 @@ class TelemetryGatherer:
                     self.last_reconnect_time = time.time()
 
             state = self._default_state()
-            
-            # System stats
-            try:
-                with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
-                    state["cpu_temp"] = round(int(f.read()) / 1000.0, 1)
-            except IOError:
-                pass
-
-            try:
-                with open('/sys/devices/platform/soc/soc:firmware/get_throttled', 'r') as f:
-                    state["low_power"] = (f.read().strip() != '0') 
-            except IOError:
-                pass
-
-            state["cpu_usage"] = psutil.cpu_percent(interval=None)
-            state["ram_usage"] = psutil.virtual_memory().percent
-
-            # Sensors
-            if self.water_connected:
-                try:
-                    state["leak_detected"] = (self.gpio.read(WATER_DETECTION_PIN) == 0)
-                except pigpio.error:
-                    self.water_connected = False
-
-            if self.bme_connected:
-                try:
-                    bme_data = bme280.sample(self.bus, BME280_ADDRESS, self.bme_calibration)
-                    state["hull_temp"] = round(bme_data.temperature, 1)
-                    state["hull_hum"] = round(bme_data.humidity, 1)
-                except Exception:
-                    self.bme_connected = False
-
-            if self.imu_connected:
-                try:
-                    accel = self.imu.get_accel_data()
-                    x, y, z = accel['x'], accel['y'], accel['z']
-                    state["pitch"] = round(math.degrees(math.atan2(y, math.sqrt(x*x + z*z))), 1)
-                    state["roll"] = round(math.degrees(math.atan2(-x, z)), 1)
-                except Exception:
-                    self.imu_connected = False
-
-            thruster_data = self.thruster.get_telemetry_data() if self.thruster else {}
-            state["front_power"] = thruster_data.get("front_power_pct", 0)
-            state["rear_power"] = thruster_data.get("rear_power_pct", 0)
+            self._poll_system_stats(state)
+            self._poll_water_sensor(state)
+            self._poll_bme(state)
+            self._poll_imu(state)
+            self._poll_thrusters(state)
 
             with self._lock:
                 self._cached_state = state
             
             time.sleep(0.1) # 10Hz polling rate
+
+    def _poll_system_stats(self, state: dict):
+        try:
+            with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+                state["cpu_temp"] = round(int(f.read()) / 1000.0, 1)
+        except IOError:
+            pass
+
+        try:
+            with open('/sys/devices/platform/soc/soc:firmware/get_throttled', 'r') as f:
+                state["low_power"] = (f.read().strip() != '0') 
+        except IOError:
+            pass
+
+        state["cpu_usage"] = psutil.cpu_percent(interval=None)
+        state["ram_usage"] = psutil.virtual_memory().percent
+
+    def _poll_water_sensor(self, state: dict):
+        if self.water_connected:
+            try:
+                state["leak_detected"] = (self.gpio.read(WATER_DETECTION_PIN) == 0)
+            except pigpio.error:
+                self.water_connected = False
+
+    def _poll_bme(self, state: dict):
+        if self.bme_connected:
+            try:
+                bme_data = bme280.sample(self.bus, BME280_ADDRESS, self.bme_calibration)
+                state["hull_temp"] = round(bme_data.temperature, 1)
+                state["hull_hum"] = round(bme_data.humidity, 1)
+            except Exception:
+                self.bme_connected = False
+
+    def _poll_imu(self, state: dict):
+        if self.imu_connected:
+            try:
+                accel = self.imu.get_accel_data()
+                x, y, z = accel['x'], accel['y'], accel['z']
+                state["pitch"] = round(math.degrees(math.atan2(y, math.sqrt(x*x + z*z))), 1)
+                state["roll"] = round(math.degrees(math.atan2(-x, z)), 1)
+            except Exception:
+                self.imu_connected = False
+
+    def _poll_thrusters(self, state: dict):
+        thruster_data = self.thruster.get_telemetry_data() if self.thruster else {}
+        state["front_power"] = thruster_data.get("front_power_pct", 0)
+        state["rear_power"] = thruster_data.get("rear_power_pct", 0)
+
+    def stop(self):
+        self._running = False
 

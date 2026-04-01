@@ -34,7 +34,7 @@ DEFAULT_POWER = 9
 # --- Sensors ---
 WATER_DETECTION_PIN = 4
 I2C_PORT = 1
-GYRO_ADDRESS = 0x68
+IMU_ADDRESS = 0x68
 BME280_ADDRESS = 0x76
 
 # --- PWM settings ---

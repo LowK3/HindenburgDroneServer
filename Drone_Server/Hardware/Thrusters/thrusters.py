@@ -14,7 +14,7 @@ class Thruster:
         self.pi.set_PWM_range(self.pin, PWM_RANGE)
         self.pi.set_watchdog(self.pin, 500)
         self.set_duty(NEUTRAL)
-        log(f"[Engine] Initialized thruster on GPIO {pin}")
+        log(f"[Thruster] Initialized thruster on GPIO {pin}")
 
     def set_duty(self, duty: int):
         duty = max(MAX_REVERSE, min(MAX_FORWARD, duty))

@@ -8,7 +8,7 @@ from Network.udp_video_server import VideoServer
 from Network.tcp_control_server import ControlServer
 from Hardware.Thrusters.thruster_manager import ThrusterManager
 from Hardware.telemetry import TelemetryGatherer
-from Utils.common import log ,setup_logging
+from Utils.common import log, setup_logging
 from config import CONNECTION_TIMEOUT
 
 class ServerApp:

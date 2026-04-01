@@ -20,7 +20,7 @@ class VideoServer:
     def start(self):
         log("UDP Video server initialized.")
 
-    def start_stream(self, client_ip):
+    def start_stream(self, client_ip: str):
         if self.streaming or (self.stream_thread and self.stream_thread.is_alive()):
             self.stop_stream()
 
@@ -36,7 +36,7 @@ class VideoServer:
         )
         self.stream_thread.start()
 
-    def stream_to_client(self, client_ip):
+    def stream_to_client(self, client_ip: str):
         log(f"Starting UDP stream to {client_ip}:{UDP_VIDEO_PORT}")
         try:
             while self.streaming:

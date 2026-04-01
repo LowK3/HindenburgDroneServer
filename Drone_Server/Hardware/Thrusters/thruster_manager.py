@@ -1,3 +1,4 @@
+import pigpio
 from config import REAR_LEFT_PIN, REAR_RIGHT_PIN, FRONT_LEFT_PIN, FRONT_RIGHT_PIN
 from .rear_thrusters import RearThrusters
 from .front_thrusters import FrontThrusters
@@ -17,7 +18,7 @@ class ThrusterManager:
             "D": self.rear.turn_right,
             "UP": self.front.tilt_up,
             "DOWN": self.front.tilt_down,
-            "STOP": self._stop_all_engines,
+            "STOP": self._stop_all_thrusters,
             "REAR+": self.rear.increase_power,
             "REAR-": self.rear.decrease_power,
             "FRONT+": self.front.increase_power,
