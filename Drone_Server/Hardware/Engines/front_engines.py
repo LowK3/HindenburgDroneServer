@@ -3,9 +3,9 @@ from config import DEFAULT_POWER
 
 class FrontEngines:
     """ Controls front thrusters for up/down tilt. """
-    def __init__(self, pi, left_pin, right_pin):
-        self.left = Engine(pi, left_pin)
-        self.right = Engine(pi, right_pin)
+    def __init__(self, gpio, left_pin, right_pin):
+        self.left = Engine(gpio, left_pin)
+        self.right = Engine(gpio, right_pin)
         self.power = DEFAULT_POWER
 
     def tilt_up(self):

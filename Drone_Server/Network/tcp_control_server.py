@@ -38,7 +38,7 @@ class ControlServer:
             except OSError:
                 break
 
-    def handle_client(self, conn, addr):
+    def handle_client(self, conn: socket.socket, addr: tuple):
         buffer = bytearray()
         self.is_connected = True
         self.connected_event.set()
@@ -54,43 +54,51 @@ class ControlServer:
                     buffer.clear()
                     continue
                 
-                # Extract and execute all complete commands in the buffer
-                while (newline_idx := buffer.find(b"\n")) != -1:
-                    cmd_bytes = buffer[:newline_idx]
-                    del buffer[:newline_idx + 1]
-                    try:
-                        cmd_str = cmd_bytes.decode('utf-8').strip()
-                        if not cmd_str:
-                            continue
-                        
-                        cmd = json.loads(cmd_str)
-                        cmd_type = cmd.get("cmd", "").upper()
-
-                        if cmd_type != "PING":
-                            self.engine.execute(cmd)
-
-                        telemetry_data = self.telemetry.get_state()
-                        telemetry_data["camera_status"] = self.camera_status
-
-                        reply_bytes = (json.dumps(telemetry_data) + "\n").encode('utf-8')
-                        conn.sendall(reply_bytes)
-                    except UnicodeDecodeError:
-                        log("Ignored command with invalid UTF-8 sequence.")
-                    except json.JSONDecodeError:
-                        log(f"Ignored malformed JSON command: {cmd_str}")
-        except socket.timeout:
-            log("Client heartbeat lost! Stopping drone safely.")
-        except ConnectionResetError:
-            log("Client abruptly disconnected! Stopping drone safely.")
+                self._process_buffer(buffer, conn)
+                
+        except (socket.timeout, ConnectionResetError) as e:
+            log(f"Client disconnected abruptly: {type(e).__name__}. Stopping drone safely.")
         except Exception as e:
             log(f"Control socket error: {e}\n{traceback.format_exc()}")
         finally:
-            self.is_connected = False
-            self.connected_event.clear()
-            conn.close()
-            if self.running:
-                self.engine.execute({"cmd": "STOP"})
-            log(f"Control client disconnected: {addr}")
+            self._cleanup_connection(conn, addr)
+
+    def _process_buffer(self, buffer: bytearray, conn: socket.socket):
+        while (newline_idx := buffer.find(b"\n")) != -1:
+            cmd_bytes = buffer[:newline_idx]
+            del buffer[:newline_idx + 1]
+            try:
+                cmd_str = cmd_bytes.decode('utf-8').strip()
+                if not cmd_str:
+                    continue
+                
+                self._execute_command(cmd_str)
+                self._send_telemetry(conn)
+            except UnicodeDecodeError:
+                log("Ignored command with invalid UTF-8 sequence.")
+
+    def _execute_command(self, cmd_str: str):
+        try:
+            cmd = json.loads(cmd_str)
+            cmd_type = cmd.get("cmd", "").upper()
+            if cmd_type != "PING":
+                self.engine.execute(cmd)
+        except json.JSONDecodeError:
+            log(f"Ignored malformed JSON command: {cmd_str}")
+
+    def _send_telemetry(self, conn: socket.socket):
+        telemetry_data = self.telemetry.get_state()
+        telemetry_data["camera_status"] = self.camera_status
+        reply_bytes = (json.dumps(telemetry_data) + "\n").encode('utf-8')
+        conn.sendall(reply_bytes)
+        
+    def _cleanup_connection(self, conn: socket.socket, addr: tuple):
+        self.is_connected = False
+        self.connected_event.clear()
+        conn.close()
+        if self.running:
+            self.engine.execute({"cmd": "STOP"})
+        log(f"Control client disconnected: {addr}")
 
     def stop(self):
         self.running = False

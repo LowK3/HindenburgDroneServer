@@ -1,21 +1,20 @@
 import socket
 import traceback
-from config import UDP_PORT, UDP_VIDEO_PORT, UDP_TIMEOUT
+from config import UDP_PORT, UDP_VIDEO_PORT, UDP_TIMEOUT, NETWORK_INTERFACE
 from Utils.common import log
 
 class DiscoveryServer:
     """Listens for "PC_CLIENT" on UDP and replies "PI_SERVER:<UDP_VIDEO_PORT>"."""
-
     def __init__(self):
         self.sock = None
 
     def start(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        # Try binding to eth0 (Linux only). Fail-soft if not allowed.
+        # Try binding to eth0. Fail-soft if not allowed.
         try:
             if hasattr(socket, "SO_BINDTODEVICE"):
-                self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"eth0\0")
+                self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, NETWORK_INTERFACE)
         except Exception as e:
             log(f"Could not bind UDP socket to eth0: {e}\n{traceback.format_exc()}")
         self.sock.bind(("0.0.0.0", UDP_PORT))
@@ -27,7 +26,6 @@ class DiscoveryServer:
         Returns client address if discovered, else None. 
         Does NOT block indefinitely (uses UDP_TIMEOUT). 
         """
-
         try:
             data, addr = self.sock.recvfrom(1024)
         except socket.timeout:

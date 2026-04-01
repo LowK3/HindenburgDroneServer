@@ -60,7 +60,7 @@ class VideoServer:
                     header = struct.pack("<BIBB", MAGIC_BYTE, self.frame_id, i, num_chunks)
                     self.sock.sendto(header + chunk, (client_ip, UDP_VIDEO_PORT))
 
-                self.frame_id = (self.frame_id + 1) % 4294967295
+                self.frame_id = (self.frame_id + 1) % 4294967296
                 
         except Exception as e:
             log(f"UDP Stream error: {e}\n{traceback.format_exc()}")
@@ -73,7 +73,7 @@ class VideoServer:
         if self.stream_thread and self.stream_thread.is_alive():
             self.stream_thread.join(timeout=1.0)
             if self.stream_thread.is_alive():
-                log("ERROR: Video stream thread refused to terminate. Camera hardware may be locked.")
+                log("WARNING! Video stream thread refused to terminate. Camera hardware may be locked.")
 
     def stop(self):
         self.stop_stream()

@@ -1,4 +1,3 @@
-import pigpio
 from config import REAR_LEFT_PIN, REAR_RIGHT_PIN, FRONT_LEFT_PIN, FRONT_RIGHT_PIN
 from .rear_engines import RearEngines
 from .front_engines import FrontEngines
@@ -6,10 +5,10 @@ from Utils.common import log
 
 class EngineManager:
     """ Engine control accepting commands from control TCP server. """
-    def __init__(self):
-        self.pi = pigpio.pi()
-        self.rear = RearEngines(self.pi, REAR_LEFT_PIN, REAR_RIGHT_PIN)
-        self.front = FrontEngines(self.pi, FRONT_LEFT_PIN, FRONT_RIGHT_PIN)
+    def __init__(self, gpio_connection: pigpio.pi):
+        self.gpio = gpio_connection
+        self.rear = RearEngines(self.gpio, REAR_LEFT_PIN, REAR_RIGHT_PIN)
+        self.front = FrontEngines(self.gpio, FRONT_LEFT_PIN, FRONT_RIGHT_PIN)
 
         self._command_map = {
             "W": self.rear.forward,
@@ -25,10 +24,6 @@ class EngineManager:
             "FRONT-": self.front.decrease_power
         }
 
-    def _stop_all_engines(self):
-        self.rear.stop()
-        self.front.stop()
-
     def execute(self, payload: dict):
         action = payload.get("cmd", "").upper()
         
@@ -39,13 +34,16 @@ class EngineManager:
         else:
             log(f"Unknown command received: {action}")
 
-    def stop(self):
-        log("Stopping all engines")
-        self._stop_all_engines()
-        self.pi.stop()
-
     def get_telemetry_data(self):
         return {
             "front_power_pct": self.front.get_power_percentage(),
             "rear_power_pct": self.rear.get_power_percentage()
         }
+
+    def stop(self):
+        log("Stopping all engines")
+        self._stop_all_engines()
+
+    def _stop_all_engines(self):
+        self.rear.stop()
+        self.front.stop()

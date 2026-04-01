@@ -1,4 +1,3 @@
-import cv2
 import traceback
 import threading
 from picamera2 import Picamera2

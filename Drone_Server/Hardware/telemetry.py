@@ -1,5 +1,4 @@
 import psutil
-import pigpio
 import smbus2
 import bme280
 import math
@@ -11,9 +10,9 @@ from Utils.common import log
 
 class TelemetryGatherer:
     """Asynchronously polls hardware sensors to prevent blocking the network loop."""
-    def __init__(self, engine_manager):
+    def __init__(self, engine_manager, gpio_connection: pigpio.pi):
         self.engine = engine_manager
-        self.pi = pigpio.pi()
+        self.gpio = gpio_connection
         self.bus = None
         self.bme_calibration = None
         self.imu = None
@@ -27,7 +26,7 @@ class TelemetryGatherer:
         self._cached_state = self._default_state()
         self._running = False
 
-    def _default_state(self) -> dict:
+    def _default_state(self):
         return {
             "type": "TELEMETRY",
             "cpu_temp": 0.0,
@@ -45,10 +44,10 @@ class TelemetryGatherer:
 
     def init_hardware(self):
         """ Attempts to connect to all offline sensors. """
-        if not self.water_connected and self.pi.connected:
+        if not self.water_connected and self.gpio.connected:
             try:
-                self.pi.set_mode(WATER_DETECTION_PIN, pigpio.INPUT)
-                self.pi.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
+                self.gpio.set_mode(WATER_DETECTION_PIN, pigpio.INPUT)
+                self.gpio.set_pull_up_down(WATER_DETECTION_PIN, pigpio.PUD_UP)
                 self.water_connected = True
             except Exception as e:
                 log(f"Water Sensor Init Error: {e}")
@@ -76,7 +75,7 @@ class TelemetryGatherer:
     def stop(self):
         self._running = False
 
-    def get_state(self) -> dict:
+    def get_state(self):
         with self._lock:
             return self._cached_state.copy()
 
@@ -108,7 +107,7 @@ class TelemetryGatherer:
             # Sensors
             if self.water_connected:
                 try:
-                    state["leak_detected"] = (self.pi.read(WATER_DETECTION_PIN) == 0)
+                    state["leak_detected"] = (self.gpio.read(WATER_DETECTION_PIN) == 0)
                 except pigpio.error:
                     self.water_connected = False
 
