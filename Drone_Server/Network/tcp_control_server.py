@@ -7,8 +7,8 @@ from Utils.common import log
 
 class ControlServer:
     """ Dedicated TCP server for receiving movement commands. """
-    def __init__(self, engine_manager, telemetry_gatherer, camera_status: bool):
-        self.engine = engine_manager
+    def __init__(self, thruster_mgr, telemetry_gatherer, camera_status: bool):
+        self.thruster = thruster_mgr
         self.telemetry = telemetry_gatherer
         self.camera_status = camera_status
         self.connected_event = threading.Event()
@@ -82,7 +82,7 @@ class ControlServer:
             cmd = json.loads(cmd_str)
             cmd_type = cmd.get("cmd", "").upper()
             if cmd_type != "PING":
-                self.engine.execute(cmd)
+                self.thruster.execute(cmd)
         except json.JSONDecodeError:
             log(f"Ignored malformed JSON command: {cmd_str}")
 
@@ -97,7 +97,7 @@ class ControlServer:
         self.connected_event.clear()
         conn.close()
         if self.running:
-            self.engine.execute({"cmd": "STOP"})
+            self.thruster.execute({"cmd": "STOP"})
         log(f"Control client disconnected: {addr}")
 
     def stop(self):

@@ -6,7 +6,7 @@ from Hardware.camera_manager import Camera
 from Network.discovery_server import DiscoveryServer
 from Network.udp_video_server import VideoServer
 from Network.tcp_control_server import ControlServer
-from Hardware.Engines.engine_manager import EngineManager
+from Hardware.Thrusters.thruster_manager import ThrusterManager
 from Hardware.telemetry import TelemetryGatherer
 from Utils.common import log ,setup_logging
 from config import CONNECTION_TIMEOUT
@@ -20,8 +20,8 @@ class ServerApp:
             raise RuntimeError("[CRITICAL] Failed to connect to pigpiod.")
 
         self.cam = Camera()
-        self.engine_mgr = EngineManager(self.gpio_connection)
-        self.telemetry_gatherer = TelemetryGatherer(self.engine_mgr, self.gpio_connection)
+        self.thruster_mgr = ThrusterManager(self.gpio_connection)
+        self.telemetry_gatherer = TelemetryGatherer(self.thruster_mgr, self.gpio_connection)
         self.discovery = DiscoveryServer()
         self.video_server = None
         self.control_server = None
@@ -57,7 +57,7 @@ class ServerApp:
         self.discovery.start()
         self.telemetry_gatherer.start()
 
-        self.control_server = ControlServer(self.engine_mgr, self.telemetry_gatherer, camera_running)
+        self.control_server = ControlServer(self.thruster_mgr, self.telemetry_gatherer, camera_running)
         self.control_server.start()
 
         control_thread = threading.Thread(
@@ -110,8 +110,8 @@ class ServerApp:
         if self.control_server:
             self.control_server.stop()
         self.telemetry_gatherer.stop()
-        self.engine_mgr.stop()
-        log("Engine shutdown complete")
+        self.thruster_mgr.stop()
+        log("Thruster shutdown complete")
         if self.video_server:
             self.video_server.stop()
         self.cam.stop()

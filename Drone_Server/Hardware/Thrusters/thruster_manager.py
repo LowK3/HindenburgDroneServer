@@ -1,14 +1,14 @@
 from config import REAR_LEFT_PIN, REAR_RIGHT_PIN, FRONT_LEFT_PIN, FRONT_RIGHT_PIN
-from .rear_engines import RearEngines
-from .front_engines import FrontEngines
+from .rear_thrusters import RearThrusters
+from .front_thrusters import FrontThrusters
 from Utils.common import log
 
-class EngineManager:
-    """ Engine control accepting commands from control TCP server. """
+class ThrusterManager:
+    """ Thruster control accepting commands from control TCP server. """
     def __init__(self, gpio_connection: pigpio.pi):
         self.gpio = gpio_connection
-        self.rear = RearEngines(self.gpio, REAR_LEFT_PIN, REAR_RIGHT_PIN)
-        self.front = FrontEngines(self.gpio, FRONT_LEFT_PIN, FRONT_RIGHT_PIN)
+        self.rear = RearThrusters(self.gpio, REAR_LEFT_PIN, REAR_RIGHT_PIN)
+        self.front = FrontThrusters(self.gpio, FRONT_LEFT_PIN, FRONT_RIGHT_PIN)
 
         self._command_map = {
             "W": self.rear.forward,
@@ -30,7 +30,7 @@ class EngineManager:
         command_func = self._command_map.get(action)
         if command_func:
             command_func()
-            log(f"Executed engine command: {action}")
+            log(f"Executed thruster command: {action}")
         else:
             log(f"Unknown command received: {action}")
 
@@ -41,9 +41,9 @@ class EngineManager:
         }
 
     def stop(self):
-        log("Stopping all engines")
-        self._stop_all_engines()
+        log("Stopping all thrusters")
+        self._stop_all_thrusters()
 
-    def _stop_all_engines(self):
+    def _stop_all_thrusters(self):
         self.rear.stop()
         self.front.stop()

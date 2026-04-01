@@ -2,7 +2,7 @@ import pigpio
 from config import PWM_FREQUENCY, PWM_RANGE, NEUTRAL, MAX_FORWARD, MAX_REVERSE
 from Utils.common import log
 
-class Engine:
+class Thruster:
     """ Base class representing a single thruster. """
     def __init__(self, pi: pigpio.pi, pin: int):
         self.pi = pi
@@ -14,7 +14,7 @@ class Engine:
         self.pi.set_PWM_range(self.pin, PWM_RANGE)
         self.pi.set_watchdog(self.pin, 500)
         self.set_duty(NEUTRAL)
-        log(f"[Engine] Initialized engine on GPIO {pin}")
+        log(f"[Engine] Initialized thruster on GPIO {pin}")
 
     def set_duty(self, duty: int):
         duty = max(MAX_REVERSE, min(MAX_FORWARD, duty))

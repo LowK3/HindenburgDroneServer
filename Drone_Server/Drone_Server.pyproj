@@ -24,10 +24,11 @@
   <ItemGroup>
     <Compile Include="config.py" />
     <Compile Include="Hardware\camera_manager.py" />
-    <Compile Include="Hardware\Engines\engines.py" />
-    <Compile Include="Hardware\Engines\front_engines.py" />
-    <Compile Include="Hardware\Engines\rear_engines.py" />
-    <Compile Include="Hardware\Engines\__init__.py" />
+    <Compile Include="Hardware\Thrusters\thrusters.py" />
+    <Compile Include="Hardware\Thrusters\front_thrusters.py" />
+    <Compile Include="Hardware\Thrusters\paired_thrusters.py" />
+    <Compile Include="Hardware\Thrusters\rear_thrusters.py" />
+    <Compile Include="Hardware\Thrusters\__init__.py" />
     <Compile Include="Hardware\telemetry.py" />
     <Compile Include="Hardware\__init__.py" />
     <Compile Include="main_server.py" />
@@ -39,13 +40,13 @@
     <Compile Include="Utils\__init__.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Hardware\Engines\" />
+    <Folder Include="Hardware\Thrusters\" />
     <Folder Include="Network\" />
     <Folder Include="Hardware\" />
     <Folder Include="Utils\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Hardware\Engines\engine_manager.py" />
+    <Content Include="Hardware\Thrusters\thruster_manager.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

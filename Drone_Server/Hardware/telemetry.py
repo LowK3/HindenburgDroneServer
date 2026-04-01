@@ -10,8 +10,8 @@ from Utils.common import log
 
 class TelemetryGatherer:
     """Asynchronously polls hardware sensors to prevent blocking the network loop."""
-    def __init__(self, engine_manager, gpio_connection: pigpio.pi):
-        self.engine = engine_manager
+    def __init__(self, thruster_mgr, gpio_connection: pigpio.pi):
+        self.thruster = thruster_mgr
         self.gpio = gpio_connection
         self.bus = None
         self.bme_calibration = None
@@ -128,9 +128,9 @@ class TelemetryGatherer:
                 except Exception:
                     self.imu_connected = False
 
-            engine_data = self.engine.get_telemetry_data() if self.engine else {}
-            state["front_power"] = engine_data.get("front_power_pct", 0)
-            state["rear_power"] = engine_data.get("rear_power_pct", 0)
+            thruster_data = self.thruster.get_telemetry_data() if self.thruster else {}
+            state["front_power"] = thruster_data.get("front_power_pct", 0)
+            state["rear_power"] = thruster_data.get("rear_power_pct", 0)
 
             with self._lock:
                 self._cached_state = state
