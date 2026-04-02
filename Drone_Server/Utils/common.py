@@ -9,11 +9,10 @@ from config import LOG_PREFIX, LOG_DIR, LOG_MAX_BYTES, LOG_BACKUP_COUNT
 logger = logging.getLogger("ServerLogger")
 
 def setup_logging():
-    log_dir = LOG_DIR
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
 
-    log_file = os.path.join(log_dir, "system.log")
+    log_file = os.path.join(LOG_DIR, "system.log")
     logger.setLevel(logging.INFO)
 
     file_handler = RotatingFileHandler(log_file, maxBytes=LOG_MAX_BYTES, backupCount=LOG_BACKUP_COUNT)
