@@ -33,7 +33,7 @@ class ServerApp:
         self._shutdown.set()
 
     def run(self):
-        self.setup()
+        self._setup()
         try:
             self._main_loop()
         except KeyboardInterrupt:
