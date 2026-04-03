@@ -36,10 +36,10 @@ class TelemetryGatherer:
             "cpu_temp": 0.0,
             "cpu_usage": 0.0,
             "ram_usage": 0.0,
-            "low_power": False,
+            "low_pwr": False,
             "leak_detected": False,
-            "front_power": 0,
-            "rear_power": 0,
+            "front_pwr": 0,
+            "rear_pwr": 0,
             "hull_temp": 0.0,
             "hull_hum": 0.0,
             "pitch": 0.0,
@@ -84,7 +84,7 @@ class TelemetryGatherer:
         while self._running:
             if not (self.water_connected and self.bme_connected and self.imu_connected):
                 if time.time() - self.last_reconnect_time > SENSOR_RECONNECT_COOLDOWN:
-                    self.init_hardware()
+                    self._init_hardware()
                     self.last_reconnect_time = time.time()
 
             state = self._default_state()

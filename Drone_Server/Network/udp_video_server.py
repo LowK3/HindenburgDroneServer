@@ -14,21 +14,21 @@ class VideoServer:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.frame_id = 0
         self.max_chunk_size = CHUNK_BYTE_LIMIT
-        self.streaming = False
+        self._stream_event = threading.Event()
         self.stream_thread = None
 
     def start(self):
         log("UDP Video server initialized.")
 
     def start_stream(self, client_ip: str):
-        if self.streaming or (self.stream_thread and self.stream_thread.is_alive()):
+        if self._stream_event.is_set() or (self.stream_thread and self.stream_thread.is_alive()):
             self.stop_stream()
 
             if self.stream_thread and self.stream_thread.is_alive():
                 log("[CRITICAL] Previous video thread is deadlocked. Cannot start new stream.")
                 return
         
-        self.streaming = True
+        self._stream_event.set()
         self.stream_thread = threading.Thread(
             target=self.stream_to_client,
             args=(client_ip,),
@@ -39,7 +39,7 @@ class VideoServer:
     def stream_to_client(self, client_ip: str):
         log(f"Starting UDP stream to {client_ip}:{UDP_VIDEO_PORT}")
         try:
-            while self.streaming:
+            while self._stream_event.is_set():
                 frame = self.camera.capture_frame()
                 if frame is None:
                     time.sleep(0.01)
@@ -66,10 +66,10 @@ class VideoServer:
             log(f"UDP Stream error: {e}\n{traceback.format_exc()}")
         finally:
             log(f"Stopped streaming to {client_ip}")
-            self.streaming = False
+            self._stream_event.clear()
 
     def stop_stream(self):
-        self.streaming = False
+        self._stream_event.clear()
         if self.stream_thread and self.stream_thread.is_alive():
             self.stream_thread.join(timeout=1.0)
             if self.stream_thread.is_alive():

@@ -9,11 +9,14 @@ from Network.tcp_control_server import ControlServer
 from Hardware.Thrusters.thruster_manager import ThrusterManager
 from Hardware.telemetry import TelemetryGatherer
 from Utils.common import log, setup_logging
-from config import CONNECTION_TIMEOUT, CAMERA_RETRY_DELAY, CAMERA_INIT_RETRIES, DISCONNECT_COOLDOWN
+from config import (
+    CONNECTION_TIMEOUT, CAMERA_RETRY_DELAY, CAMERA_INIT_RETRIES, DISCONNECT_COOLDOWN,
+    MAIN_LOOP_YIELD
+)
 
 class ServerApp:
     def __init__(self):
-        self._shutdown = threading.Event()
+        self._stop_event = threading.Event()
 
         self.gpio_connection = pigpio.pi()
         if not self.gpio_connection.connected:
@@ -26,22 +29,16 @@ class ServerApp:
         self.video_server = None
         self.control_server = None
 
-    def shutdown_flag(self):
-        return self._shutdown.is_set()
-
-    def request_shutdown(self):
-        self._shutdown.set()
-
     def run(self):
         self._setup()
         try:
             self._main_loop()
         except KeyboardInterrupt:
             log("KeyboardInterrupt caught, shutting down")
-            self.request_shutdown()
+            self._stop_event.set()
         except Exception as e:
             log(f"Unexpected error in main loop: {e}\n{traceback.format_exc()}")
-            self.request_shutdown()
+            self._stop_event.set()
         finally:
             self._stop()
 
@@ -79,9 +76,9 @@ class ServerApp:
         return False
 
     def _main_loop(self):
-        while not self.shutdown_flag():
+        while not self._stop_event.is_set():
             addr = self.discovery.listen_once()
-            if self.shutdown_flag():
+            if self._stop_event.is_set():
                 break
             if not addr:
                 continue
@@ -97,8 +94,8 @@ class ServerApp:
             if self.video_server:
                 self.video_server.start_stream(client_ip)
 
-            while self.control_server.is_connected and not self.shutdown_flag():
-                self.control_server.disconnected_event.wait(timeout=0.5)
+            while self.control_server.is_connected and not self._stop_event.is_set():
+                self.control_server.disconnected_event.wait(timeout=MAIN_LOOP_YIELD)
 
             if self.video_server:
                 self.video_server.stop_stream()

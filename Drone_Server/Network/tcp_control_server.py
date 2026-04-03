@@ -2,7 +2,10 @@ import socket
 import traceback
 import json
 import threading
-from config import CONTROL_TCP_PORT, TCP_SEND_TIMEOUT, TCP_BUFFER_SIZE, TCP_RECV_CHUNK
+from config import (
+    CONTROL_TCP_PORT, TCP_SEND_TIMEOUT, TCP_BUFFER_SIZE, TCP_RECV_CHUNK, 
+    TCP_ACCEPT_TIMEOUT
+)
 from Utils.common import log
 
 class ControlServer:
@@ -14,21 +17,22 @@ class ControlServer:
         self.connected_event = threading.Event()
         self.disconnected_event = threading.Event()
         self.disconnected_event.set()
+        self._stop_event = threading.Event()
         self.sock = None
         self.is_connected = False
-        self.running = False
 
     def start(self):
-        self.running = True
+        self._stop_event.clear()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(("", CONTROL_TCP_PORT))
         self.sock.listen(1)
+        self.sock.settimeout(TCP_ACCEPT_TIMEOUT)
         log(f"Control server listening on TCP {CONTROL_TCP_PORT}.")
 
     def accept_client(self):
         """ Blocking accept loop for incoming command connections. """
-        while self.running:
+        while not self._stop_event.is_set():
             try:
                 conn, addr = self.sock.accept()
                 conn.settimeout(TCP_SEND_TIMEOUT)
@@ -45,7 +49,7 @@ class ControlServer:
         self.connected_event.set()
         self.disconnected_event.clear()
         try:
-            while self.running:
+            while not self._stop_event.is_set():
                 data = conn.recv(TCP_RECV_CHUNK)
                 if not data:
                     break
@@ -99,12 +103,12 @@ class ControlServer:
         self.connected_event.clear()
         self.disconnected_event.set()
         conn.close()
-        if self.running:
+        if not self._stop_event.is_set():
             self.thruster.execute({"cmd": "STOP"})
         log(f"Control client disconnected: {addr}")
 
     def stop(self):
-        self.running = False
+        self._stop_event.set()
         if self.sock:
             try:
                 self.sock.close()
