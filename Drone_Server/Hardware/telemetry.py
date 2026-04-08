@@ -42,6 +42,7 @@ class TelemetryGatherer:
             "rear_pwr": 0,
             "hull_temp": 0.0,
             "hull_hum": 0.0,
+            "hull_press": 0.0,
             "pitch": 0.0,
             "roll": 0.0
         }
@@ -128,6 +129,7 @@ class TelemetryGatherer:
                 bme_data = bme280.sample(self.bus, BME280_ADDRESS, self.bme_calibration)
                 state["hull_temp"] = round(bme_data.temperature, 1)
                 state["hull_hum"] = round(bme_data.humidity, 1)
+                state["hull_press"] = round(bme_data.pressure, 1)
             except Exception:
                 self.bme_connected = False
 
