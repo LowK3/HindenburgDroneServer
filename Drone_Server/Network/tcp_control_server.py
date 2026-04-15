@@ -35,6 +35,8 @@ class ControlServer:
         while not self._stop_event.is_set():
             try:
                 conn, addr = self.sock.accept()
+                # Disable Nagle's Algorithm to prevent artificial latency
+                conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 conn.settimeout(TCP_SEND_TIMEOUT)
                 log(f"Control client connected: {addr}")
                 self.handle_client(conn, addr)

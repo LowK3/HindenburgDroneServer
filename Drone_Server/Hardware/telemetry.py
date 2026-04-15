@@ -25,6 +25,7 @@ class TelemetryGatherer:
         self.bme_connected = False
         self.imu_connected = False
         self.last_reconnect_time = 0
+        self.last_slow_poll_time = 0
         
         self._lock = threading.Lock()
         self._cached_state = self._default_state()
@@ -88,12 +89,16 @@ class TelemetryGatherer:
                     self._init_hardware()
                     self.last_reconnect_time = time.time()
 
-            state = self._default_state()
-            self._poll_system_stats(state)
+            state = self._default_state.copy()
             self._poll_water_sensor(state)
-            self._poll_bme(state)
             self._poll_imu(state)
             self._poll_thrusters(state)
+
+            current_time = time.time()
+            if current_time - self.last_slow_poll_time >= 1.0:
+                self._poll_system_stats(state)
+                self._poll_bme(state)
+                self.last_slow_poll_time = current_time
 
             with self._lock:
                 self._cached_state = state
