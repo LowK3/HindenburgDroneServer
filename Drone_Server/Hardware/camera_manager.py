@@ -36,7 +36,7 @@ class Camera:
     def stop(self):
         if self.cam is not None:
             try:
-                stop_thread = threading.Thread(target=self.cam.stop)
+                stop_thread = threading.Thread(target=self.cam.stop, daemon=True)
                 stop_thread.start()
                 stop_thread.join(timeout=2.0)
 
