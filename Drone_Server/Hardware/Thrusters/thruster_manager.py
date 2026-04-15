@@ -37,8 +37,8 @@ class ThrusterManager:
 
     def get_telemetry_data(self):
         return {
-            "front_power_pct": self.front.get_power_percentage(),
-            "rear_power_pct": self.rear.get_power_percentage()
+            "front_pwr_pct": self.front.get_power_percentage(),
+            "rear_pwr_pct": self.rear.get_power_percentage()
         }
 
     def stop(self):

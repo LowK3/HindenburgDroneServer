@@ -9,7 +9,7 @@ from mpu6050 import mpu6050
 from config import (
     WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, IMU_ADDRESS, SENSOR_RECONNECT_COOLDOWN,
     POLLING_RATE
-    )
+)
 from Utils.common import log
 
 class TelemetryGatherer:
@@ -34,8 +34,8 @@ class TelemetryGatherer:
         return {
             "type": "TELEMETRY",
             "cpu_temp": 0.0,
-            "cpu_usage": 0.0,
-            "ram_usage": 0.0,
+            "cpu_usg": 0.0,
+            "ram_usg": 0.0,
             "low_pwr": False,
             "leak_detected": False,
             "front_pwr": 0,
@@ -109,12 +109,12 @@ class TelemetryGatherer:
 
         try:
             with open('/sys/devices/platform/soc/soc:firmware/get_throttled', 'r') as f:
-                state["low_power"] = (f.read().strip() != '0') 
+                state["low_pwr"] = (f.read().strip() != '0') 
         except IOError:
             pass
 
-        state["cpu_usage"] = psutil.cpu_percent(interval=None)
-        state["ram_usage"] = psutil.virtual_memory().percent
+        state["cpu_usg"] = psutil.cpu_percent(interval=None)
+        state["ram_usg"] = psutil.virtual_memory().percent
 
     def _poll_water_sensor(self, state: dict):
         if self.water_connected:
@@ -145,8 +145,8 @@ class TelemetryGatherer:
 
     def _poll_thrusters(self, state: dict):
         thruster_data = self.thruster.get_telemetry_data() if self.thruster else {}
-        state["front_power"] = thruster_data.get("front_power_pct", 0)
-        state["rear_power"] = thruster_data.get("rear_power_pct", 0)
+        state["front_pwr"] = thruster_data.get("front_pwr_pct", 0)
+        state["rear_pwr"] = thruster_data.get("rear_pwr_pct", 0)
 
     def stop(self):
         self._running = False
