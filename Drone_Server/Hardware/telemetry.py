@@ -89,7 +89,7 @@ class TelemetryGatherer:
                     self._init_hardware()
                     self.last_reconnect_time = time.time()
 
-            state = self._default_state.copy()
+            state = self._cached_state.copy()
             self._poll_water_sensor(state)
             self._poll_imu(state)
             self._poll_thrusters(state)
