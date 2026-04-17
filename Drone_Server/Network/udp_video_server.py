@@ -38,7 +38,7 @@ class VideoServer:
         )
         self.stream_thread.start()
 
-    def stream_to_client(self, client_ip: str):
+    def _stream_to_client(self, client_ip: str):
         log(f"Starting UDP stream to {client_ip}:{UDP_VIDEO_PORT}")
         try:
             while self._stream_event.is_set():

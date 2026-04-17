@@ -45,7 +45,7 @@ class ControlServer:
             except OSError:
                 break
 
-    def handle_client(self, conn: socket.socket, addr: tuple):
+    def _handle_client(self, conn: socket.socket, addr: tuple):
         buffer = bytearray()
         self.is_connected = True
         self.connected_event.set()

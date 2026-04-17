@@ -11,7 +11,7 @@ from Hardware.telemetry import TelemetryGatherer
 from Utils.common import log, setup_logging
 from config import (
     CONNECTION_TIMEOUT, CAMERA_RETRY_DELAY, CAMERA_INIT_RETRIES, DISCONNECT_COOLDOWN,
-    MAIN_LOOP_YIELD
+    MAIN_LOOP_YIELD, MAX_FRAME_DELAY
 )
 
 class ServerApp:
@@ -54,7 +54,7 @@ class ServerApp:
         self.discovery.start()
         self.telemetry_gatherer.start()
 
-        self.control_server = ControlServer(self.thruster_mgr, self.telemetry_gatherer, self.camera_running)
+        self.control_server = ControlServer(self.thruster_mgr, self.telemetry_gatherer, self._camera_running)
         self.control_server.start()
 
         control_thread = threading.Thread(
@@ -75,12 +75,9 @@ class ServerApp:
         log("[CRITICAL] Camera failed to initialize. Drone will run blind!")
         return False
 
-    def camera_running(self):
-        if not self.video_server:
-            return False
-        
+    def _camera_running(self):
         if self.video_server.stream_thread and self.video_server.stream_thread.is_alive():
-            if time.time() - self.video_server.last_frame_time > 1.0:
+            if time.time() - self.video_server.last_frame_time > MAX_FRAME_DELAY:
                 return False
         return True
 
