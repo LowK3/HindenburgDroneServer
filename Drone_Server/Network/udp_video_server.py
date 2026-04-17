@@ -16,6 +16,7 @@ class VideoServer:
         self.max_chunk_size = CHUNK_BYTE_LIMIT
         self._stream_event = threading.Event()
         self.stream_thread = None
+        self.last_frame_time = time.time()
 
     def start(self):
         log("UDP Video server initialized.")
@@ -29,6 +30,7 @@ class VideoServer:
                 return
         
         self._stream_event.set()
+        self.last_frame_time = time.time()
         self.stream_thread = threading.Thread(
             target=self.stream_to_client,
             args=(client_ip,),
@@ -61,6 +63,7 @@ class VideoServer:
                     self.sock.sendto(header + chunk, (client_ip, UDP_VIDEO_PORT))
 
                 self.frame_id = (self.frame_id + 1) % 4294967296
+                self.last_frame_time = time.time()
                 
         except Exception as e:
             log(f"UDP Stream error: {e}\n{traceback.format_exc()}")

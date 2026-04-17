@@ -46,15 +46,15 @@ class ServerApp:
         setup_logging()
         log("Starting server application")
         
-        camera_running = self._initialize_camera()
-        if camera_running:
+        camera_started = self._initialize_camera()
+        if camera_started:
             self.video_server = VideoServer(self.cam)
             self.video_server.start()
 
         self.discovery.start()
         self.telemetry_gatherer.start()
 
-        self.control_server = ControlServer(self.thruster_mgr, self.telemetry_gatherer, camera_running)
+        self.control_server = ControlServer(self.thruster_mgr, self.telemetry_gatherer, self.camera_running)
         self.control_server.start()
 
         control_thread = threading.Thread(
@@ -74,6 +74,15 @@ class ServerApp:
                 time.sleep(CAMERA_RETRY_DELAY)
         log("[CRITICAL] Camera failed to initialize. Drone will run blind!")
         return False
+
+    def camera_running(self):
+        if not self.video_server:
+            return False
+        
+        if self.video_server.stream_thread and self.video_server.stream_thread.is_alive():
+            if time.time() - self.video_server.last_frame_time > 1.0:
+                return False
+        return True
 
     def _main_loop(self):
         while not self._stop_event.is_set():

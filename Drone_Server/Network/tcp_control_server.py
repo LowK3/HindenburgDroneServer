@@ -10,10 +10,10 @@ from Utils.common import log
 
 class ControlServer:
     """ Dedicated TCP server for receiving movement commands. """
-    def __init__(self, thruster_mgr, telemetry_gatherer, camera_status: bool):
+    def __init__(self, thruster_mgr, telemetry_gatherer, camera_status_callback):
         self.thruster = thruster_mgr
         self.telemetry = telemetry_gatherer
-        self.camera_status = camera_status
+        self.get_camera_status = camera_status_callback
         self.connected_event = threading.Event()
         self.disconnected_event = threading.Event()
         self.disconnected_event.set()
@@ -96,7 +96,7 @@ class ControlServer:
 
     def _send_telemetry(self, conn: socket.socket):
         telemetry_data = self.telemetry.get_state()
-        telemetry_data["camera_status"] = self.camera_status
+        telemetry_data["camera_status"] = self.get_camera_status()
         reply_bytes = (json.dumps(telemetry_data) + "\n").encode('utf-8')
         conn.sendall(reply_bytes)
         
