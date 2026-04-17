@@ -32,7 +32,7 @@ class VideoServer:
         self._stream_event.set()
         self.last_frame_time = time.time()
         self.stream_thread = threading.Thread(
-            target=self.stream_to_client,
+            target=self._stream_to_client,
             args=(client_ip,),
             daemon=True
         )

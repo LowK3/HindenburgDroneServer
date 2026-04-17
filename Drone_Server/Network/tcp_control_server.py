@@ -39,7 +39,7 @@ class ControlServer:
                 conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 conn.settimeout(TCP_SEND_TIMEOUT)
                 log(f"Control client connected: {addr}")
-                self.handle_client(conn, addr)
+                self._handle_client(conn, addr)
             except socket.timeout:
                 continue
             except OSError:
