@@ -8,7 +8,7 @@ import threading
 from mpu6050 import mpu6050
 from config import (
     WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, IMU_ADDRESS, SENSOR_RECONNECT_COOLDOWN,
-    POLLING_RATE
+    POLLING_RATE, SMOOTHING_FACTOR
 )
 from Utils.common import log
 
@@ -26,6 +26,9 @@ class TelemetryGatherer:
         self.imu_connected = False
         self.last_reconnect_time = 0
         self.last_slow_poll_time = 0
+
+        self.pitch_filtered = 0.0
+        self.roll_filtered = 0.0
         
         self._lock = threading.Lock()
         self._cached_state = self._default_state()
@@ -143,8 +146,16 @@ class TelemetryGatherer:
             try:
                 accel = self.imu.get_accel_data()
                 x, y, z = accel['x'], accel['y'], accel['z']
-                state["pitch"] = round(math.degrees(math.atan2(y, math.sqrt(x*x + z*z))), 1)
-                state["roll"] = round(math.degrees(math.atan2(-x, z)), 1)
+
+                # Invert axes as needed to match the physical orientation of the sensor on the drone
+                raw_pitch = math.degrees(math.atan2(-y, math.sqrt(x*x + z*z)))
+                raw_roll = math.degrees(math.atan2(-x, z))
+
+                self.pitch_filtered = (SMOOTHING_FACTOR * raw_pitch) + ((1.0 - SMOOTHING_FACTOR) * self.pitch_filtered)
+                self.roll_filtered = (SMOOTHING_FACTOR * raw_roll) + ((1.0 - SMOOTHING_FACTOR) * self.roll_filtered)
+
+                state["pitch"] = round(self.pitch_filtered, 1)
+                state["roll"] = round(self.roll_filtered, 1)
             except Exception:
                 self.imu_connected = False
 
