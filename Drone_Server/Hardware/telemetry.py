@@ -7,7 +7,7 @@ import time
 import threading
 from mpu6050 import mpu6050
 from config import (
-    WATER_DETECTION_PIN, I2C_PORT, BME280_ADDRESS, IMU_ADDRESS, SENSOR_RECONNECT_COOLDOWN,
+    WATER_DETECTION_PIN, I2C_PORT, BME_ADDRESS, IMU_ADDRESS, SENSOR_RECONNECT_COOLDOWN,
     POLLING_RATE, SMOOTHING_FACTOR
 )
 from Utils.common import log
@@ -73,7 +73,7 @@ class TelemetryGatherer:
         if not self.bme_connected:
             try:
                 self.bus = smbus2.SMBus(I2C_PORT)
-                self.bme_calibration = bme280.load_calibration_params(self.bus, BME280_ADDRESS)
+                self.bme_calibration = bme280.load_calibration_params(self.bus, BME_ADDRESS)
                 self.bme_connected = True
             except Exception as e:
                 log(f"BME280 Init Error: {e}")
@@ -134,7 +134,7 @@ class TelemetryGatherer:
     def _poll_bme(self, state: dict):
         if self.bme_connected:
             try:
-                bme_data = bme280.sample(self.bus, BME280_ADDRESS, self.bme_calibration)
+                bme_data = bme280.sample(self.bus, BME_ADDRESS, self.bme_calibration)
                 state["hull_temp"] = round(bme_data.temperature, 1)
                 state["hull_hum"] = round(bme_data.humidity, 1)
                 state["hull_press"] = round(bme_data.pressure, 1)
