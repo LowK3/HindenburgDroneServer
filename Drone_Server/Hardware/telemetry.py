@@ -37,16 +37,16 @@ class TelemetryGatherer:
     def _default_state(self):
         return {
             "type": "TELEMETRY",
-            "cpu_temp": 0.0,
-            "cpu_usg": 0.0,
-            "ram_usg": 0.0,
+            "cpu_temp": None,
+            "cpu_usg": None,
+            "ram_usg": None,
             "low_pwr": False,
             "leak_detected": False,
-            "front_pwr": 0,
-            "rear_pwr": 0,
-            "hull_temp": 0.0,
-            "hull_hum": 0.0,
-            "hull_press": 0.0,
+            "front_pwr": None,
+            "rear_pwr": None,
+            "hull_temp": None,
+            "hull_hum": None,
+            "hull_press": None,
             "pitch": 0.0,
             "roll": 0.0
         }
