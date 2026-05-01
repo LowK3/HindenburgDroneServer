@@ -42,10 +42,10 @@ LOG_MAX_BYTES = 5 * 1024 * 1024
 LOG_BACKUP_COUNT = 2
 
 # --- Thruster control pins (ApisQueen U2 Mini) ---
-REAR_LEFT_PIN  = 13
-REAR_RIGHT_PIN = 21
-FRONT_LEFT_PIN = 5
-FRONT_RIGHT_PIN = 7
+REAR_LEFT_PIN  = 5
+REAR_RIGHT_PIN = 7
+FRONT_LEFT_PIN = 13
+FRONT_RIGHT_PIN = 21
 
 # --- Thruster power bounds ---
 DEFAULT_POWER = 9
