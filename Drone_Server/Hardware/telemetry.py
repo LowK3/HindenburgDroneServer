@@ -93,7 +93,6 @@ class TelemetryGatherer:
                     self.last_reconnect_time = time.time()
 
             state = self._cached_state.copy()
-            self._poll_water_sensor(state)
             self._poll_imu(state)
             self._poll_thrusters(state)
 
@@ -101,6 +100,7 @@ class TelemetryGatherer:
             if current_time - self.last_slow_poll_time >= 1.0:
                 self._poll_system_stats(state)
                 self._poll_bme(state)
+                self._poll_water_sensor(state)
                 self.last_slow_poll_time = current_time
 
             with self._lock:
@@ -110,14 +110,14 @@ class TelemetryGatherer:
 
     def _poll_system_stats(self, state: dict):
         try:
-            with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
                 state["cpu_temp"] = round(int(f.read()) / 1000.0, 1)
         except IOError:
             pass
 
         try:
-            with open('/sys/devices/platform/soc/soc:firmware/get_throttled', 'r') as f:
-                state["low_pwr"] = (f.read().strip() != '0') 
+            with open("/sys/devices/platform/soc/soc:firmware/get_throttled", "r") as f:
+                state["low_pwr"] = (f.read().strip() != "0")
         except IOError:
             pass
 
