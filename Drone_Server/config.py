@@ -38,8 +38,8 @@ MAX_FRAME_DELAY = 1.0
 # --- Logging ---
 LOG_PREFIX = "[SERVER]"
 LOG_DIR = "logs"
-LOG_MAX_BYTES = 5 * 1024 * 1024
-LOG_BACKUP_COUNT = 2
+LOG_MAX_BYTES = 2 * 1024 * 1024
+LOG_BACKUP_COUNT = 4
 
 # --- Thruster control pins (ApisQueen U2 Mini) ---
 REAR_LEFT_PIN  = 5
