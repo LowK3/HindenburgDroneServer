@@ -16,7 +16,7 @@ class Camera:
                 sensor={"output_size": NATIVE_RESOLUTION},
                 main={"size": CAM_RESOLUTION, "format": "RGB888"},
                 controls={"FrameRate": CAM_FPS},
-                transform=Transform(hflip=1)
+                transform=Transform(hflip=1, vflip=1)
             )
             self.cam.configure(cfg)
             self.cam.start()
