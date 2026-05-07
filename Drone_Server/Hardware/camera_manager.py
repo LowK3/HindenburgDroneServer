@@ -1,6 +1,7 @@
 import traceback
 import threading
 from picamera2 import Picamera2
+from libcamera import Transform
 from config import NATIVE_RESOLUTION, CAM_RESOLUTION, CAM_FPS
 from Utils.common import log
 
@@ -14,7 +15,9 @@ class Camera:
             cfg = self.cam.create_video_configuration(
                 sensor={"output_size": NATIVE_RESOLUTION},
                 main={"size": CAM_RESOLUTION, "format": "RGB888"},
-                controls={"FrameRate": CAM_FPS})
+                controls={"FrameRate": CAM_FPS},
+                transform=Transform(hflip=1)
+            )
             self.cam.configure(cfg)
             self.cam.start()
             log(f"Camera started with res={CAM_RESOLUTION}, fps={CAM_FPS}")
