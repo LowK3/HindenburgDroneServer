@@ -74,6 +74,8 @@ class ControlServer:
     def _process_buffer(self, buffer: bytearray, conn: socket.socket):
         while (newline_idx := buffer.find(b"\n")) != -1:
             cmd_bytes = buffer[:newline_idx]
+
+            # Delete the processed bytes from the buffer to free memory
             del buffer[:newline_idx + 1]
             try:
                 cmd_str = cmd_bytes.decode('utf-8').strip()

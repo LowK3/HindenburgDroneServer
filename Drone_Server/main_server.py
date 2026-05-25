@@ -30,6 +30,7 @@ class ServerApp:
         self.control_server = None
 
     def run(self):
+        """ Starts the server application and blocks until interrupted or a fatal error occurs. """
         self._setup()
         try:
             self._main_loop()
@@ -82,6 +83,13 @@ class ServerApp:
         return True
 
     def _main_loop(self):
+        """
+        Manages the connection lifecycle:
+        1. Listen for UDP broadcast discovery.
+        2. Wait for the client to initiate a TCP handshake.
+        3. Start video stream.
+        4. Idle while connected, then clean up on disconnect and return to step 1.
+        """
         while not self._stop_event.is_set():
             addr = self.discovery.listen_once()
             if self._stop_event.is_set():

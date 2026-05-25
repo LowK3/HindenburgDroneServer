@@ -86,6 +86,7 @@ class TelemetryGatherer:
                 log(f"Gyro Init Error: {e}")
 
     def _poll_loop(self):
+        """ Background loop reading sensor data at different intervals based on sensor priority/speed. """
         while self._running:
             if not (self.water_connected and self.bme_connected and self.imu_connected):
                 if time.time() - self.last_reconnect_time > SENSOR_RECONNECT_COOLDOWN:
@@ -93,9 +94,12 @@ class TelemetryGatherer:
                     self.last_reconnect_time = time.time()
 
             state = self._cached_state.copy()
+
+            # Fast polling
             self._poll_imu(state)
             self._poll_thrusters(state)
 
+            # Slow polling
             current_time = time.time()
             if current_time - self.last_slow_poll_time >= 1.0:
                 self._poll_system_stats(state)
@@ -142,6 +146,7 @@ class TelemetryGatherer:
                 self.bme_connected = False
 
     def _poll_imu(self, state: dict):
+        """ Calculates pitch and roll from raw accelerometer vectors using a low-pass filter. """
         if self.imu_connected:
             try:
                 accel = self.imu.get_accel_data()
@@ -151,6 +156,7 @@ class TelemetryGatherer:
                 raw_pitch = math.degrees(math.atan2(-y, math.sqrt(x*x + z*z)))
                 raw_roll = math.degrees(math.atan2(-x, z))
 
+                # Exponential moving average (low-pass filter) to mitigate noise
                 self.pitch_filtered = (SMOOTHING_FACTOR * raw_pitch) + ((1.0 - SMOOTHING_FACTOR) * self.pitch_filtered)
                 self.roll_filtered = (SMOOTHING_FACTOR * raw_roll) + ((1.0 - SMOOTHING_FACTOR) * self.roll_filtered)
 

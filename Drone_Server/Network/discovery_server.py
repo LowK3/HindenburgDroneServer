@@ -27,7 +27,7 @@ class DiscoveryServer:
     def listen_once(self):
         """ 
         Returns client address if discovered, else None. 
-        Does NOT block indefinitely (uses UDP_TIMEOUT). 
+        Does not block indefinitely. 
         """
         try:
             data, addr = self.sock.recvfrom(DISCOVERY_RECV_CHUNK)
