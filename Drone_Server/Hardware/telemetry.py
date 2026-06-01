@@ -5,6 +5,8 @@ import pigpio
 import math
 import time
 import threading
+import statistics
+from collections import deque
 from mpu6050 import mpu6050
 from config import (
     WATER_DETECTION_PIN, I2C_PORT, BME_ADDRESS, IMU_ADDRESS, SENSOR_RECONNECT_COOLDOWN,
@@ -29,6 +31,8 @@ class TelemetryGatherer:
 
         self.pitch_filtered = 0.0
         self.roll_filtered = 0.0
+        self.pitch_buffer = deque(maxlen=5)
+        self.roll_buffer = deque(maxlen=5)
         
         self._lock = threading.Lock()
         self._cached_state = self._default_state()
@@ -156,9 +160,15 @@ class TelemetryGatherer:
                 raw_pitch = math.degrees(math.atan2(-y, math.sqrt(x*x + z*z)))
                 raw_roll = math.degrees(math.atan2(-x, z))
 
+                self.pitch_buffer.append(raw_pitch)
+                self.roll_buffer.append(raw_roll)
+
+                median_pitch = statistics.median(self.pitch_buffer)
+                median_roll = statistics.median(self.roll_buffer)
+
                 # Exponential moving average (low-pass filter) to mitigate noise
-                self.pitch_filtered = (SMOOTHING_FACTOR * raw_pitch) + ((1.0 - SMOOTHING_FACTOR) * self.pitch_filtered)
-                self.roll_filtered = (SMOOTHING_FACTOR * raw_roll) + ((1.0 - SMOOTHING_FACTOR) * self.roll_filtered)
+                self.pitch_filtered = (SMOOTHING_FACTOR * median_pitch) + ((1.0 - SMOOTHING_FACTOR) * self.pitch_filtered)
+                self.roll_filtered = (SMOOTHING_FACTOR * median_roll) + ((1.0 - SMOOTHING_FACTOR) * self.roll_filtered)
 
                 state["pitch"] = round(self.pitch_filtered, 1)
                 state["roll"] = round(self.roll_filtered, 1)
