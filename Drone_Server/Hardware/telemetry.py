@@ -158,7 +158,7 @@ class TelemetryGatherer:
 
                 # Invert axes as needed to match the physical orientation of the sensor on the drone
                 raw_pitch = math.degrees(math.atan2(-y, math.sqrt(x*x + z*z)))
-                raw_roll = math.degrees(math.atan2(-x, z))
+                raw_roll = math.degrees(math.atan2(x, z))
 
                 self.pitch_buffer.append(raw_pitch)
                 self.roll_buffer.append(raw_roll)
