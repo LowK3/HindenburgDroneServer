@@ -31,8 +31,8 @@ class TelemetryGatherer:
 
         self.pitch_filtered = 0.0
         self.roll_filtered = 0.0
-        self.pitch_buffer = deque(maxlen=5)
-        self.roll_buffer = deque(maxlen=5)
+        self.pitch_buffer = deque(maxlen=3)
+        self.roll_buffer = deque(maxlen=3)
         
         self._lock = threading.Lock()
         self._cached_state = self._default_state()
