@@ -16,8 +16,7 @@ from Utils.common import log
 
 class TelemetryGatherer:
     """Asynchronously polls hardware sensors to prevent blocking the network loop."""
-    def __init__(self, thruster_mgr, gpio_connection: pigpio.pi):
-        self.thruster = thruster_mgr
+    def __init__(self, gpio_connection: pigpio.pi):
         self.gpio = gpio_connection
         self.bus = None
         self.bme_calibration = None
@@ -46,8 +45,6 @@ class TelemetryGatherer:
             "ram_usg": None,
             "low_pwr": False,
             "leak_detected": False,
-            "front_pwr": None,
-            "rear_pwr": None,
             "hull_temp": None,
             "hull_hum": None,
             "hull_press": None,
@@ -101,7 +98,6 @@ class TelemetryGatherer:
 
             # Fast polling
             self._poll_imu(state)
-            self._poll_thrusters(state)
 
             # Slow polling
             current_time = time.time()
@@ -174,11 +170,6 @@ class TelemetryGatherer:
                 state["roll"] = round(self.roll_filtered, 1)
             except Exception:
                 self.imu_connected = False
-
-    def _poll_thrusters(self, state: dict):
-        thruster_data = self.thruster.get_telemetry_data() if self.thruster else {}
-        state["front_pwr"] = thruster_data.get("front_pwr_pct", 0)
-        state["rear_pwr"] = thruster_data.get("rear_pwr_pct", 0)
 
     def stop(self):
         self._running = False

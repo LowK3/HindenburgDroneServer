@@ -24,7 +24,7 @@ class ServerApp:
 
         self.cam = Camera()
         self.thruster_mgr = ThrusterManager(self.gpio_connection)
-        self.telemetry_gatherer = TelemetryGatherer(self.thruster_mgr, self.gpio_connection)
+        self.telemetry_gatherer = TelemetryGatherer(self.gpio_connection)
         self.discovery = DiscoveryServer()
         self.video_server = None
         self.control_server = None

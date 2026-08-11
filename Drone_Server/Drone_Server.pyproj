@@ -25,9 +25,6 @@
     <Compile Include="config.py" />
     <Compile Include="Hardware\camera_manager.py" />
     <Compile Include="Hardware\Thrusters\thrusters.py" />
-    <Compile Include="Hardware\Thrusters\front_thrusters.py" />
-    <Compile Include="Hardware\Thrusters\paired_thrusters.py" />
-    <Compile Include="Hardware\Thrusters\rear_thrusters.py" />
     <Compile Include="Hardware\Thrusters\__init__.py" />
     <Compile Include="Hardware\telemetry.py" />
     <Compile Include="Hardware\__init__.py" />
