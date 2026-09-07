@@ -1,0 +1,7 @@
+pigpio>=
+picamera2>=
+simplejpeg>=1.9.0
+smbus2>=
+psutil>=
+mpu6050-raspberrypi>=
+RPi.bme280>=

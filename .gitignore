@@ -361,3 +361,25 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# ==========================================
+# Underwater Drone Custom Rules
+# ==========================================
+
+# Virtual Environments
+venv/
+.venv/
+
+# Build & Executable Output
+dist/
+build/
+
+# Qt Settings & OS Noise
+*.ini
+.DS_Store
+Thumbs.db
+
+# Visual Studio Python Project artifacts
+.vs/
+*.pyproj.user
+*.sln.docstates
