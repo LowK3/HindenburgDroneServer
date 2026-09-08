@@ -79,3 +79,8 @@ source venv/bin/activate
 ```bash
 python main_server.py
 ```
+
+## Related Repository
+
+The drone ground control station software is maintained separately:
+- [HindenburgDroneClient](https://github.com/LowK3/HindenburgDroneClient)
