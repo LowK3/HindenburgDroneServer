@@ -2,10 +2,25 @@
 
 Raspberry Pi-based onboard server for the **Hindenburg underwater ROV**. Handles control commands, telemetry, sensor data, and thruster control through a hardware abstraction layer using `pigpio`.
 
+                  HINDENBURG ROV
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+       Raspberry Pi 4B      Sensors / ESCs
+             │
+       Onboard Server
+             │
+        TCP / UDP
+             │
+             ▼
+      Ground Control Station
+             │
+       Keyboard / Gamepad
+       
 ## Hardware Requirements
 
 * Raspberry Pi 4B running Raspberry Pi OS
-* 4� ESC-controlled thrusters
+* 4× ESC-controlled thrusters
 * MPU-6500 IMU (optional)
 * BME280 environmental sensor (optional)
 * Direct Ethernet connection to the Ground Control Station
