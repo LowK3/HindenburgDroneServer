@@ -10,8 +10,8 @@
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>Drone_Server</Name>
-    <RootNamespace>Drone_Server</RootNamespace>
+    <Name>HindenburgDroneServer</Name>
+    <RootNamespace>HindenburgDroneServer</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
