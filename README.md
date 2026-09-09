@@ -77,7 +77,7 @@ sudo ./Scripts/setup_dhcp.sh
 
 ```bash
 sudo apt update
-sudo apt install pigpio python3-pip python3-venv python3-smbus dnsmasq
+sudo apt install pigpio python3-pip python3-venv python3-smbus dnsmasq libcamera
 ```
 
 ### 3. Create the Python Environment
