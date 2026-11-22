@@ -6,12 +6,13 @@ import math
 import time
 import threading
 import statistics
+from typing import Callable
 from collections import deque
 from mpu6050 import mpu6050
 from config import (
     WATER_DETECTION_PIN, I2C_PORT, BME_ADDRESS, IMU_ADDRESS, SENSOR_RECONNECT_COOLDOWN,
     SMOOTHING_FACTOR, IMU_POLL_INTERVAL, THRUSTER_POLL_INTERVAL, LEAK_POLL_INTERVAL, 
-    ENV_POLL_INTERVAL
+    ENV_POLL_INTERVAL, CPU_TEMP_PATH, CPU_TEMP_SCALE, THROTTLED_FLAGS_PATH, TELEMETRY_LOOP_SLEEP
 )
 from Utils.common import log
 
@@ -40,6 +41,7 @@ class TelemetryGatherer:
         
         self._lock = threading.Lock()
         self._running = False
+        self._update_callback = None
 
         self._imu_state = {
             "pitch": None,
@@ -66,6 +68,9 @@ class TelemetryGatherer:
         }
 
     def start(self):
+        if self._running:
+            return
+
         self._running = True
         self._init_hardware()
         threading.Thread(target=self._poll_loop, daemon=True).start()
@@ -85,6 +90,18 @@ class TelemetryGatherer:
     def get_thrusters(self):
         with self._lock:
             return self._thruster_state.copy()
+
+    def set_update_callback(self, callback: Callable[[str], None]):
+        """Registers a callback for telemetry category updates."""
+        self._update_callback = callback
+
+    def _notify_update(self, category: str):
+        """Notifies the registered callback that a category was updated."""
+        if self._update_callback is not None:
+            try:
+                self._update_callback(category)
+            except Exception as e:
+                log(f"Telemetry update callback error ({category}): {e}")
 
     def _init_hardware(self):
         """ Attempts to connect to all offline sensors. """
@@ -134,6 +151,7 @@ class TelemetryGatherer:
                 with self._lock:
                     self._imu_state = state
 
+                self._notify_update("IMU")
                 self._last_imu_poll = current_time
 
             # Thrusters: 20 Hz
@@ -146,6 +164,7 @@ class TelemetryGatherer:
                 with self._lock:
                     self._thruster_state = state
 
+                self._notify_update("THRUSTERS")
                 self._last_thruster_poll = current_time
 
             # Leak sensor: 10 Hz
@@ -158,6 +177,7 @@ class TelemetryGatherer:
                 with self._lock:
                     self._leak_state = state
 
+                self._notify_update("LEAK")
                 self._last_leak_poll = current_time
 
             # Environmental and system data: 1 Hz
@@ -171,19 +191,20 @@ class TelemetryGatherer:
                 with self._lock:
                     self._environment_state = state
 
+                self._notify_update("ENVIRONMENT")
                 self._last_environment_poll = current_time
 
-            time.sleep(0.001)
+            time.sleep(TELEMETRY_LOOP_SLEEP)
 
     def _poll_system_stats(self, state: dict):
         try:
-            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
-                state["cpu_temp"] = round(int(f.read()) / 1000.0, 1)
+            with open(CPU_TEMP_PATH, "r") as f:
+                state["cpu_temp"] = round(int(f.read()) / CPU_TEMP_SCALE, 1)
         except (IOError, ValueError):
             state["cpu_temp"] = None
 
         try:
-            with open("/sys/devices/platform/soc/soc:firmware/get_throttled", "r") as f:
+            with open(THROTTLED_FLAGS_PATH, "r") as f:
                 throttled_flags = int(f.read().strip(), 0)
 
                 # Bit 0: undervoltage currently active
@@ -252,9 +273,6 @@ class TelemetryGatherer:
 
     def _poll_thrusters(self, state: dict):
         try:
-            if not self.thruster:
-                raise RuntimeError("Thruster manager unavailable")
-
             thruster_data = self.thruster.get_telemetry_data()
 
             state["front_pwr"] = thruster_data.get("front_pwr_pct")

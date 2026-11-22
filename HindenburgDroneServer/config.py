@@ -72,3 +72,26 @@ NEUTRAL = 75
 MAX_FORWARD = 100
 MAX_REVERSE = 60
 
+# --- TCP server ---
+TCP_BACKLOG = 1
+
+# --- TCP protocol ---
+TCP_ENCODING = "utf-8"
+TCP_CMD_PING = "PING"
+TCP_CMD_STOP = "STOP"
+
+# --- Telemetry notifications ---
+TCP_TELEMETRY_CATEGORIES = ("IMU", "THRUSTERS", "LEAK", "ENVIRONMENT")
+TCP_WAKE_SIGNAL = b"\x01"
+TCP_WAKE_RECV_CHUNK = 1024
+
+# --- Telemetry polling ---
+TELEMETRY_LOOP_SLEEP = 0.001
+
+# --- Sensor data formatting ---
+CPU_TEMP_SCALE = 1000.0
+
+# --- System monitoring ---
+CPU_TEMP_PATH = "/sys/class/thermal/thermal_zone0/temp"
+THROTTLED_FLAGS_PATH = "/sys/devices/platform/soc/soc:firmware/get_throttled"
+
